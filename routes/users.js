@@ -1,9 +1,21 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+const User = require("../models/users")
+
+// const { checkBody } = require("../modules/checkBody")
+
+// router.get('/', function(req, res, next) {
+//   res.send('users');
+// });
+
+router.post("/", async (req, res) => {
+    const { username } = req.body
+    console.log(username)
+    const newUser = await User.create({ 
+      username: username.toLowerCase(),
+    })
+    res.json("created")
+})
 
 module.exports = router;

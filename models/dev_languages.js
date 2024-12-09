@@ -4,6 +4,6 @@ const devLangsSchema = mongoose.Schema({
     value: String,
 });
 
-const DevLang = mongoose.model("users", devLangsSchema);
+const DevLang = mongoose.model("dev_languages", devLangsSchema);
 
 module.exports = DevLang

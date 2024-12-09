@@ -7,7 +7,7 @@ const usersSchema = mongoose.Schema({
     token: String,
     profilePic: String, 
     isDark: Boolean,
-    devLang: { type: mongoose.Schema.Types.ObjectId, ref: 'dev_languages' },
+    //devLang: { type: mongoose.Schema.Types.ObjectId, ref: 'dev_languages' },
 });
 
 const User = mongoose.model("user", usersSchema);

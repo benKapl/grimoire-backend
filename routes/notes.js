@@ -6,6 +6,19 @@ const { checkBody } = require('../modules/checkBody');
 const Note = require('../models/notes');
 const User = require('../models/users');
 
+/** GET LAST UPDATED NOTE*/
+router.get('/last:token', async (req, res) => {
+  try {
+    const note = await Note.findOne({ token: req.params.token }).sort({ updatedAt: -1 });
+    console.log("note =>", note)
+
+    if (!note) throw new Error('Error retrieving the last updated note');
+    res.json({ result: true, note: note });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
 /** GET note from its ID in database */
 router.get('/:noteId', async (req, res) => {
   try {
@@ -16,18 +29,6 @@ router.get('/:noteId', async (req, res) => {
     const note = await Note.findById(noteId);
 
     if (!note) throw new Error('Could not get note');
-    res.json({ result: true, note: note });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
-
-/** GET LAST UPDATED NOTE*/
-router.get('/last', async (req, res) => {
-  try {
-    const note = await Note.findOne().sort({ updatedAt: -1 });
-
-    if (!note) throw new Error('Error retrieving the last updated note');
     res.json({ result: true, note: note });
   } catch (err) {
     res.json({ result: false, error: err.message });

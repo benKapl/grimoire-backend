@@ -6,7 +6,7 @@ const { checkBody } = require('../modules/checkBody');
 const Note = require('../models/notes');
 const User = require('../models/users');
 
-/** Create note from its ID in database */
+/** GET note from its ID in database */
 router.get('/:noteId', async (req, res) => {
   try {
     const { noteId } = req.params;
@@ -29,15 +29,20 @@ router.post("/", async (req, res) => {
   
   try  {
     const { token } = req.body
+
     const user = await User.findOne({ token })
-    console.log(user)
     if (!user) throw new Error("User not found")
 
     const newNote = await Note.create({
       title: 'Nouvelle note',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      content: '',
+      blocs: [{
+        position: 0,
+        type: "text",
+        value: "",
+        language: null,
+      }],
       forwardNotes: [],
       backwardNotes: [],
       isBookmarked: false,
@@ -51,6 +56,26 @@ router.post("/", async (req, res) => {
     res.json({ result: false, error: err.message });
   }
 });
+
+/** Save note when modified*/
+router.put("/", async (req, res) => {
+  const isBodyValid = checkBody(req.body, ["noteId"]);
+  if (!isBodyValid) throw new Error("Missing or empty body parameter")
+  try {
+    const { noteId, noteData } = req.body
+
+    // const user = await User.findOne({ token })
+    // if (!user) throw new Error("User not found")
+    const note = await Note.updateOne({ _id: noteId }, {
+      title: noteData.title,
+      updatedAt: Date.now()
+    });
+    res.json({ result: true })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
 
 /** Get all note with title and ids*/
 router.get('/', async (req, res) => {

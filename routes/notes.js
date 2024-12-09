@@ -6,13 +6,31 @@ const { checkBody } = require("../modules/checkBody")
 const Note = require("../models/notes")
 const User = require("../models/users")
 
+/** Create note from its ID */
+router.get("/:noteId", async (req, res) => {
+  try  {
+    const { noteId } = req.params;
+    console.log(noteId)
+    if (!noteId) throw new Error("Invalid ID")
+
+    const note = await Note.findById(noteId)
+
+    if (!note) throw new Error("Could not get note")
+    res.json({result: true, note: note})
+
+  } catch(err) {
+    res.json({ result: false, error: err.message})
+  }
+  
+})
+
+/** Create a new note in database */
 router.post("/", async (req, res) => {
-  /** Create a new note in database */
   const isBodyValid = checkBody(req.body, ["token"]);
   if (!isBodyValid) throw new Error("Missing or empty body parameter")
   
   try  {
-    const token = req.body.token
+    const { token } = req.body
     const user = await User.findOne({ token })
     console.log(user)
     if (!user) throw new Error("User not found")

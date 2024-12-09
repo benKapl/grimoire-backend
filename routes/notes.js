@@ -6,7 +6,7 @@ const { checkBody } = require("../modules/checkBody")
 const Note = require("../models/notes")
 const User = require("../models/users")
 
-/** Create note from its ID */
+/** Create note from its ID in database */
 router.get("/:noteId", async (req, res) => {
   try  {
     const { noteId } = req.params;

@@ -5,7 +5,6 @@ const notesSchema = mongoose.Schema({
     createdAt: { type: Date, index: true },
     updatedAt: { type: Date, index: true },
     content: String,
-    token: String,
     forwardNotes: [ { type: mongoose.Schema.Types.ObjectId, ref: 'notes' } ], 
     backwardNotes: [ { type: mongoose.Schema.Types.ObjectId, ref: 'notes' } ], 
     isBookmarked: Boolean,

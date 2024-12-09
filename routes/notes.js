@@ -7,17 +7,17 @@ const Note = require('../models/notes');
 const User = require('../models/users');
 
 /** GET LAST UPDATED NOTE*/
-router.get('/last:token', async (req, res) => {
-  try {
-    const note = await Note.findOne({ token: req.params.token }).sort({ updatedAt: -1 });
-    console.log("note =>", note)
+// router.get('/last:token', async (req, res) => {
+//   try {
+//     const note = await Note.findOne({ token: req.params.token }).sort({ updatedAt: -1 });
+//     console.log("note =>", note)
 
-    if (!note) throw new Error('Error retrieving the last updated note');
-    res.json({ result: true, note: note });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
+//     if (!note) throw new Error('Error retrieving the last updated note');
+//     res.json({ result: true, note: note });
+//   } catch (err) {
+//     res.json({ result: false, error: err.message });
+//   }
+// });
 
 /** GET note from its ID in database */
 router.get('/:noteId', async (req, res) => {

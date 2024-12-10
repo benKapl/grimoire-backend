@@ -7,7 +7,7 @@ const Note = require('../models/notes');
 const User = require('../models/users');
 
 /** Get all note with title and ids*/
-router.get('/users/:token', async (req, res) => {
+router.get('/user/:token', async (req, res) => {
   try {
     const { token } = req.params;
 

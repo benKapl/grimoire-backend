@@ -42,7 +42,7 @@ router.get('/:noteId', async (req, res) => {
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
-  } catch (err) {
+  } catch (err) { 
     res.json({ result: false, error: err.message });
   }
 });

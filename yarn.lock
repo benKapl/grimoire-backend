@@ -302,6 +302,11 @@ mongodb@~6.10.0:
     bson "^6.7.0"
     mongodb-connection-string-url "^3.0.0"
 
+mongoos@^0.0.1-security:
+  version "0.0.1-security"
+  resolved "https://registry.yarnpkg.com/mongoos/-/mongoos-0.0.1-security.tgz#be1f74c8d973afe093b8005f8e07361ddeaddd59"
+  integrity sha512-bRrqG68DaRaGYsf9wLDqwrzoPfckn9012r6QFTaadOGz/5fmI5lmrnJt4B1NhhGbk8ZXvBEtLNFscM4fo1TAFA==
+
 mongoose@^8.8.4:
   version "8.8.4"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-8.8.4.tgz#11e3991a7fd03596a79bc9f9b2fe8f3e75b7a30d"

@@ -6,6 +6,31 @@ const { checkBody } = require('../modules/checkBody');
 const Note = require('../models/notes');
 const User = require('../models/users');
 
+/* Get all note with title and ids/*/
+router.get('/user/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    const notes = await Note.find({ user: user._id });
+
+    res.json({
+      result: true,
+      notes: notes.map((note) => ({
+        id: note._id,
+        title: note.title,
+      })),
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
 /** GET note from its ID in database */
 router.get('/:noteId', async (req, res) => {
   try {
@@ -17,7 +42,7 @@ router.get('/:noteId', async (req, res) => {
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
-  } catch (err) {
+  } catch (err) { 
     res.json({ result: false, error: err.message });
   }
 });

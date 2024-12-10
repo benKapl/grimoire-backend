@@ -11,6 +11,7 @@ var indexRouter = require('./routes/index');
 var notesRouter = require('./routes/notes');
 var tagsRouter = require('./routes/tags');
 var usersRouter = require('./routes/users');
+var searchRouter = require('./routes/search');
 
 var app = express();
 const cors = require('cors');
@@ -27,5 +28,6 @@ app.use('/dev', devRouter);
 app.use('/notes', notesRouter);
 app.use('/tags', tagsRouter);
 app.use('/users', usersRouter);
+app.use('/search', searchRouter );
 
 module.exports = app;

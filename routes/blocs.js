@@ -34,43 +34,52 @@ router.post("/", async (req, res) => {
       }
       res.json({ result: false, error: "Bloc was not linked to note" })
   
-    //   const user = await User.findOne({ token })
-    //   if (!user) throw new Error("User not found")
-  
-    //   const newNote = await Note.create({
-    //     title: 'Nouvelle note'
-  
-    //   res.json({ result: true, note: newNote });
     } catch (err) {
       res.json({ result: false, error: err.message });
     }
-  });
+});
 
+/* Get all blocs within a note */
+router.get('/:noteId', async (req, res) => {
+    try {
+      const { noteId } = req.params;
+  
+      const note = await Note.findById(noteId).populate("blocs") // Find a note with all detailed blocs
+      if (!note) throw new Error('Could not find note');
 
+      res.json({ result: true, blocs: note.blocs });
+    
+    } catch (err) {
+      res.json({ result: false, error: err.message });
+    }
+});
 
-// /* Get all note with title and ids/*/
-// router.get('/user/:token', async (req, res) => {
-//     try {
-//       const { token } = req.params;
+/** Save bloc when modified*/
+router.put("/", async (req, res) => {
+    const isBodyValid = checkBody(req.body, ["blocId", "type"]); // check only type and bloc id (language can be null, and content can be "")
+    if (!isBodyValid) throw new Error("Missing or empty body parameter")
+    
+    try {
+      const { blocId, type, language, content } = req.body
   
-//       const user = await User.findOne({ token });
+      const updatedBloc = await Bloc.updateOne(
+        { _id: blocId }, 
+        {
+            type,
+            language,
+            content,
+            updatedAt: Date.now(),
+        });
+
+      if (updatedBloc.modifiedCount > 0) {
+            res.json({ result: true }) // if updated, respond result = true
+            return;
+          }
+      res.json({ result: false, error: "could not update Bloc" })
   
-//       if (!user) {
-//         return res.json({ result: false, error: 'User not found' });
-//       }
-  
-//       const notes = await Note.find({ user: user._id });
-  
-//       res.json({
-//         result: true,
-//         notes: notes.map((note) => ({
-//           id: note._id,
-//           title: note.title,
-//         })),
-//       });
-//     } catch (err) {
-//       res.json({ result: false, error: err.message });
-//     }
-//   });
+    } catch(err) {
+      res.json({ result: false, error: err.message })
+    }
+  })
 
 module.exports = router;

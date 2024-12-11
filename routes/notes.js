@@ -35,10 +35,10 @@ router.get('/user/:token', async (req, res) => {
 router.get('/:noteId', async (req, res) => {
   try {
     const { noteId } = req.params;
-    console.log(noteId);
+    // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId);
+    const note = await Note.findById(noteId).populate("blocs");
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -60,16 +60,9 @@ router.post('/', async (req, res) => {
 
     const newNote = await Note.create({
       title: 'Nouvelle note',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      blocs: [
-        {
-          position: 0,
-          type: 'text',
-          value: '',
-          language: null,
-        },
-      ],
+      createdAt: new Date(), 
+      updatedAt: new Date(),
+      blocs: [],
       forwardNotes: [],
       backwardNotes: [],
       isBookmarked: false,
@@ -77,7 +70,7 @@ router.post('/', async (req, res) => {
       user: user._id,
     });
 
-    if (!newNote) throw new Error('Could not create stack');
+    if (!newNote) throw new Error('Could not create note');
     res.json({ result: true, note: newNote });
   } catch (err) {
     res.json({ result: false, error: err.message });
@@ -91,38 +84,17 @@ router.put('/', async (req, res) => {
   try {
     const { noteId, noteData } = req.body;
 
-    // const user = await User.findOne({ token })
-    // if (!user) throw new Error("User not found")
-    const note = await Note.updateOne(
-      { _id: noteId },
-      {
-        title: noteData.title,
-        updatedAt: Date.now(),
-      }
-    );
-    res.json({ result: true });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
-
-/** Get all note with title and ids*/
-router.get('/', async (req, res) => {
-  try {
-    const notes = await Note.find();
-
-    const notesList = notes.map((note) => {
-      return {
-        id: note._id,
-        title: note.title,
-      };
+    const note = await Note.updateOne({ _id: noteId }, {
+      title: noteData.title,
+      updatedAt: Date.now(),
+      // blocs: noteData.blocs,
     });
-    res.json({ result: true, notes: notesList });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
+    res.json({ result: true })
 
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
 
 router.get('/search/:query', async (req, res, next)=> {
   try {
@@ -140,7 +112,6 @@ router.get('/search/:query', async (req, res, next)=> {
 
       res.status(200).json(notes);
   } catch (error) {
-      console.error('Error fetching notes:', error);
       res.status(500).json({ message: 'Internal Server Error' });
   }
 });

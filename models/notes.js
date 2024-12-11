@@ -4,7 +4,7 @@ const notesSchema = mongoose.Schema({
     title: String,
     createdAt: { type: Date, index: true },
     updatedAt: { type: Date, index: true },
-    blocs: [ mongoose.Schema.Types.Mixed ],
+    blocs: [ { type: mongoose.Schema.Types.ObjectId, ref: 'blocs' } ],
     forwardNotes: [ { type: mongoose.Schema.Types.ObjectId, ref: 'notes' } ], 
     backwardNotes: [ { type: mongoose.Schema.Types.ObjectId, ref: 'notes' } ], 
     isBookmarked: Boolean,

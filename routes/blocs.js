@@ -28,11 +28,11 @@ router.post("/", async (req, res) => {
         { $push: { blocs: newBloc._id } } // Add the newBloc's ID to the blocs array of the Note document
       );
 
-      if (updatedNote.modifiedCount > 0) {
+      if (updatedNote.modifiedCount === 0) {
+          res.json({ result: false, error: "Bloc was not linked to note" })
+          return;
+        }
         res.json({ result: true }) // if updated, respond result = true
-        return;
-      }
-      res.json({ result: false, error: "Bloc was not linked to note" })
   
     } catch (err) {
       res.json({ result: false, error: err.message });
@@ -71,36 +71,49 @@ router.put("/", async (req, res) => {
             updatedAt: Date.now(),
         });
 
-      if (updatedBloc.modifiedCount > 0) {
-            res.json({ result: true }) // if updated, respond result = true
-            return;
-          }
-      res.json({ result: false, error: "could not update Bloc" })
+    if (updatedBloc.modifiedCount === 0) {
+          res.json({ result: false, error: "could not update Bloc" })
+          return;
+    }
+    res.json({ result: true }) // if updated, respond result = true
   
     } catch(err) {
       res.json({ result: false, error: err.message })
     }
 })
 
-router.delete('/:blocId', async (req, res) => {
-    const { blocId } = req.params
-    if (!blocId) throw new Error('Missing bloc id');
+router.delete('/:blocId/:noteId', async (req, res) => {
+    const { blocId, noteId } = req.params
+    if (!blocId || !noteId) throw new Error('Missing bloc or note id');
 
-    const deletedBloc = await Bloc.deleteOne({_id: blocId})
-    console.log(deletedBloc)
+    try {
+        const deletedBloc = await Bloc.deleteOne({_id: blocId})
 
-    if (deletedBloc.deletedCount > 0) {
-        res.json({ result: true }) // => EXPECTED RESPONSE (success)
-        return;
+        if (!deletedBloc.acknowledged) {
+            res.json({ result: false, error: "something unexpected happended" })
+            return
+        }
+
+        if (deletedBloc.deletedCount === 0 && deletedBloc.acknowledged) {
+            res.json({ result: false, error: "Bloc already deleted" }) // (Happens when bloc is not found)
+            return;
+        }
+        if (deletedBloc.deletedCount > 0) { // => EXPECTED CASE (success)
+            // if bloc is deleted, we need to remove it from the note document
+            const updatedNote = await Note.updateOne(
+                { _id: noteId }, // find related note
+                { $pull: { blocs: blocId } } // Remove the blocI from the blocs array of the Note document
+            );
+            if (updatedNote.modifiedCount === 0) {
+                res.json({ result: false, error: "Could not remove bloc from note" })
+                return;
+            }
+            res.json({ result: true }) 
+            return;
+        }
+    } catch(err) {
+        res.json({ result: false, error: err.message })
     }
-    if (deletedBloc.deletedCount === 0 && deletedBloc.acknowledged) {
-        res.json({ result: false, error: "Bloc already deleted" }) // (Happens when bloc is not found)
-        return;
-    }
-
-    res.json({ result: false, error: "something unexpected happended" })  // (Other error)
-
-
 })
 
 module.exports = router;

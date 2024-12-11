@@ -80,6 +80,27 @@ router.put("/", async (req, res) => {
     } catch(err) {
       res.json({ result: false, error: err.message })
     }
-  })
+})
+
+router.delete('/:blocId', async (req, res) => {
+    const { blocId } = req.params
+    if (!blocId) throw new Error('Missing bloc id');
+
+    const deletedBloc = await Bloc.deleteOne({_id: blocId})
+    console.log(deletedBloc)
+
+    if (deletedBloc.deletedCount > 0) {
+        res.json({ result: true }) // => EXPECTED RESPONSE (success)
+        return;
+    }
+    if (deletedBloc.deletedCount === 0 && deletedBloc.acknowledged) {
+        res.json({ result: false, error: "Bloc already deleted" }) // (Happens when bloc is not found)
+        return;
+    }
+
+    res.json({ result: false, error: "something unexpected happended" })  // (Other error)
+
+
+})
 
 module.exports = router;

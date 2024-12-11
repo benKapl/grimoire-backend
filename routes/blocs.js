@@ -18,8 +18,8 @@ router.post("/", async (req, res) => {
         type,
         language,
         content: "",
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
       if (!newBloc) throw new Error('Could not create bloc');
 

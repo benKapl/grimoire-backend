@@ -60,8 +60,8 @@ router.post("/", async (req, res) => {
 
     const newNote = await Note.create({
       title: 'Nouvelle note',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: new Date(), 
+      updatedAt: new Date(),
       blocs: [],
       forwardNotes: [],
       backwardNotes: [],

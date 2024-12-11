@@ -39,7 +39,6 @@ router.get('/:noteId', async (req, res) => {
     if (!noteId) throw new Error('Invalid ID');
 
     const note = await Note.findById(noteId).populate("blocs");
-    console.log("GET NOTE ", note)
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -113,7 +112,6 @@ router.get('/search/:query', async (req, res, next)=> {
 
       res.status(200).json(notes);
   } catch (error) {
-      console.error('Error fetching notes:', error);
       res.status(500).json({ message: 'Internal Server Error' });
   }
 });

@@ -153,7 +153,7 @@ router.delete('/delete/:noteId', async (req, res) => {
     // Trouve la note avant de la supprimer
     const noteToDelete = await Note.findById(noteId);
     if (!noteToDelete) {
-      return res.status(404).json({ result: false, error: 'Note not found' });
+      return { result: false, error: 'Note not found' };
     }
     // Supprime la note
     await Note.deleteOne({ _id: noteId });
@@ -163,7 +163,9 @@ router.delete('/delete/:noteId', async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting note:', error);
-    res.status(500).json({ result: false, error: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ result: false, error: 'Internal Server Error' });
   }
 });
 

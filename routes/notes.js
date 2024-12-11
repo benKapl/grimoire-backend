@@ -93,7 +93,8 @@ router.put("/", async (req, res) => {
     // if (!user) throw new Error("User not found")
     const note = await Note.updateOne({ _id: noteId }, {
       title: noteData.title,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
+      blocs: noteData.blocs,
     });
     res.json({ result: true })
 

@@ -62,12 +62,7 @@ router.post("/", async (req, res) => {
       title: 'Nouvelle note',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      blocs: [{
-        position: 0,
-        type: "text",
-        value: "",
-        language: null,
-      }],
+      blocs: [],
       forwardNotes: [],
       backwardNotes: [],
       isBookmarked: false,

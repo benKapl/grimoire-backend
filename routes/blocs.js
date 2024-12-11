@@ -4,38 +4,42 @@ var router = express.Router();
 
 const { checkBody } = require('../modules/checkBody');
 const Bloc = require('../models/blocs');
+const Note = require('../models/notes');
 
 /** Create a new bloc in a note */
 router.post("/", async (req, res) => {
-    const isBodyValid = checkBody(req.body, ["type"]); // check only type (language can be null)
+    const isBodyValid = checkBody(req.body, ["noteId", "type"]); // check only type (language can be null)
     if (!isBodyValid) throw new Error("Missing or empty body parameter")
     
     try  {
-      const { type, language } = req.body
+      const { noteId, type, language } = req.body
 
-      res.json({type, language})
+      const newBloc = await Bloc.create({
+        type,
+        language,
+        content: "",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      if (!newBloc) throw new Error('Could not create bloc');
+
+      const updatedNote = await Note.updateOne(
+        { _id: noteId }, // find related note
+        { $push: { blocs: newBloc._id } } // Add the newBloc's ID to the blocs array of the Note document
+      );
+
+      if (updatedNote.modifiedCount > 0) {
+        res.json({ result: true }) // if updated, respond result = true
+        return;
+      }
+      res.json({ result: false, error: "Bloc was not linked to note" })
   
     //   const user = await User.findOne({ token })
     //   if (!user) throw new Error("User not found")
   
     //   const newNote = await Note.create({
-    //     title: 'Nouvelle note',
-    //     createdAt: Date.now(),
-    //     updatedAt: Date.now(),
-    //     blocs: [{
-    //       position: 0,
-    //       type: "text",
-    //       value: "",
-    //       language: null,
-    //     }],
-    //     forwardNotes: [],
-    //     backwardNotes: [],
-    //     isBookmarked: false,
-    //     isPrivate: true,
-    //     user: user._id,
-    //   });
+    //     title: 'Nouvelle note'
   
-    //   if (!newNote) throw new Error('Could not create stack');
     //   res.json({ result: true, note: newNote });
     } catch (err) {
       res.json({ result: false, error: err.message });

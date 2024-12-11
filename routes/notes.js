@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
       user: user._id,
     });
 
-    if (!newNote) throw new Error('Could not create stack');
+    if (!newNote) throw new Error('Could not create note');
     res.json({ result: true, note: newNote });
   } catch (err) {
     res.json({ result: false, error: err.message });

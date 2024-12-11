@@ -8,7 +8,7 @@ const Note = require('../models/notes');
 
 /** Create a new bloc in a note */
 router.post("/", async (req, res) => {
-    const isBodyValid = checkBody(req.body, ["noteId", "type"]); // check only type (language can be null)
+    const isBodyValid = checkBody(req.body, ["type", "noteId"]); // check only type (language can be null)
     if (!isBodyValid) throw new Error("Missing or empty body parameter")
     
     try  {

@@ -35,10 +35,11 @@ router.get('/user/:token', async (req, res) => {
 router.get('/:noteId', async (req, res) => {
   try {
     const { noteId } = req.params;
-    console.log(noteId);
+    // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId);
+    const note = await Note.findById(noteId).populate("blocs");
+    console.log("GET NOTE ", note)
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -84,12 +85,10 @@ router.put("/", async (req, res) => {
   try {
     const { noteId, noteData } = req.body
 
-    // const user = await User.findOne({ token })
-    // if (!user) throw new Error("User not found")
     const note = await Note.updateOne({ _id: noteId }, {
       title: noteData.title,
       updatedAt: Date.now(),
-      blocs: noteData.blocs,
+      // blocs: noteData.blocs,
     });
     res.json({ result: true })
 
@@ -97,24 +96,6 @@ router.put("/", async (req, res) => {
     res.json({ result: false, error: err.message })
   }
 })
-
-/** Get all note with title and ids*/
-router.get('/', async (req, res) => {
-  try {
-    const notes = await Note.find();
-
-    const notesList = notes.map((note) => {
-      return {
-        id: note._id,
-        title: note.title,
-      };
-    });
-    res.json({ result: true, notes: notesList });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
-
 
 router.get('/search/:query', async (req, res, next)=> {
   try {

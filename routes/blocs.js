@@ -13,6 +13,7 @@ router.post("/", async (req, res) => {
     
     try  {
       const { noteId, type, language } = req.body
+      console.log("type => ", type)
 
       const newBloc = await Bloc.create({
         type,

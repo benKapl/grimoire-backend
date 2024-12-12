@@ -116,5 +116,29 @@ router.get('/search/:query', async (req, res, next)=> {
   }
 });
 
+router.delete('/delete/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    if (!noteId) {
+      return { result: false, error: 'Invalid ID' };
+    }
+    // Trouve la note avant de la supprimer
+    const noteToDelete = await Note.findById(noteId);
+    if (!noteToDelete) {
+      return { result: false, error: 'Note not found' };
+    }
+    // Supprime la note
+    await Note.deleteOne({ _id: noteId });
+    res.json({
+      result: true,
+      message: 'Note deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    return res
+      .status(500)
+      .json({ result: false, error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;

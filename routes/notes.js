@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-// const moment = require('moment');
+const moment = require('moment');
 
 const { checkBody } = require('../modules/checkBody');
 const Note = require('../models/notes');
@@ -58,10 +58,9 @@ router.post('/', async (req, res) => {
     const user = await User.findOne({ token });
     if (!user) throw new Error('User not found');
 
+
     const newNote = await Note.create({
       title: 'Nouvelle note',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
       blocs: [
         {
           position: 0,
@@ -160,11 +159,14 @@ router.get('/search/:query/:token', async (req, res, next)=> {
 
 /** Get all note by date*/
 router.get('/by/date', async (req, res) => {
-  const date = new Date()
-  console.log("date: ",date)
+  // Obtenir la date actuelle
+  const today = new Date();
+  // Construire une chaîne au format 'YYYY-MM-DD'
+  const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // Initialiser un objet Date avec la chaîne formatée
+  
   try {
-    const notes = await Note.find({createdAt: date});
-    console.log("note by date: ",notes)
+    const notes = await Note.find({createdAt: formattedToday});
     
     if (notes.length === 0) {
       console.log("No notes found with this date.");

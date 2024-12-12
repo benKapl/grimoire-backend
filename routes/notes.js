@@ -38,7 +38,7 @@ router.get('/:noteId', async (req, res) => {
     // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId).populate("blocs");
+    const note = await Note.findById(noteId).populate('blocs');
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
 
     const newNote = await Note.create({
       title: 'Nouvelle note',
-      createdAt: new Date(), 
+      createdAt: new Date(),
       updatedAt: new Date(),
       blocs: [],
       forwardNotes: [],
@@ -84,25 +84,26 @@ router.put('/', async (req, res) => {
   try {
     const { noteId, noteData } = req.body;
 
-    const note = await Note.updateOne({ _id: noteId }, {
-      title: noteData.title,
-      updatedAt: Date.now(),
-      // blocs: noteData.blocs,
-    });
-    res.json({ result: true })
-
-  } catch(err) {
-    res.json({ result: false, error: err.message })
+    const note = await Note.updateOne(
+      { _id: noteId },
+      {
+        title: noteData.title,
+        updatedAt: Date.now(),
+        // blocs: noteData.blocs,
+      }
+    );
+    res.json({ result: true });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
   }
-})
+});
 
-router.get('/search/:query/:token', async (req, res, next)=> {
-  if(req.params.query === ''){
+router.get('/search/:query/:token', async (req, res, next) => {
+  if (req.params.query === '') {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 
   try {
-
     const { token } = req.params;
     const query = req.params.query;
 
@@ -114,19 +115,20 @@ router.get('/search/:query/:token', async (req, res, next)=> {
 
     // Vérifier si query est vide
     if (!query) {
-        return res.status(400).json({ message: 'Query is required' });
+      return res.status(400).json({ message: 'Query is required' });
     }
 
     // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
-    const notes = await Note.find({ user: user._id, 
-        title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
+    const notes = await Note.find({
+      user: user._id,
+      title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
     console.log('Notes fetched:', notes);
     res.status(200).json(notes);
   } catch (error) {
-      console.error('Error fetching notes:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-  } 
+    console.error('Error fetching notes:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
 router.delete('/delete/:noteId', async (req, res) => {
@@ -151,6 +153,58 @@ router.delete('/delete/:noteId', async (req, res) => {
     return res
       .status(500)
       .json({ result: false, error: 'Internal Server Error' });
+  }
+});
+
+router.put('/addfavorites/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    if (!noteId) {
+      return { result: false, error: 'Invalid ID' };
+    }
+    const noteToToggleFavorite = await Note.findById(noteId);
+    if (!noteToToggleFavorite) {
+      return { result: false, error: 'Note not found' };
+    }
+    // Inverse l'état de "isBookmarked"
+    noteToToggleFavorite.isBookmarked = !noteToToggleFavorite.isBookmarked;
+    await noteToToggleFavorite.save();
+
+    res.json({
+      result: true,
+      id: noteToToggleFavorite._id,
+      title: noteToToggleFavorite.title,
+      isBookmarked: noteToToggleFavorite.isBookmarked,
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
+/* Get all note favorites and ids/*/
+router.get('/favorites/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    const favorites = await Note.find({ user: user._id, isBookmarked: true });
+
+    res.json({
+      result: true,
+
+      favorites: favorites.map((favorite) => ({
+        id: favorite._id,
+        title: favorite.title,
+        isBookmarked: favorite.isBookmarked,
+      })),
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
   }
 });
 

@@ -96,24 +96,37 @@ router.put('/', async (req, res) => {
   }
 })
 
-router.get('/search/:query', async (req, res, next)=> {
-  try {
-      const query = req.params.query;
-      
-      // Vérifier si query est vide
-      if (!query) {
-          return res.status(400).json({ message: 'Query is required' });
-      }
-
-      // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
-      const notes = await Note.find({
-          title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
-      });
-
-      res.status(200).json(notes);
-  } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+router.get('/search/:query/:token', async (req, res, next)=> {
+  if(req.params.query === ''){
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
+
+  try {
+
+    const { token } = req.params;
+    const query = req.params.query;
+
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    // Vérifier si query est vide
+    if (!query) {
+        return res.status(400).json({ message: 'Query is required' });
+    }
+
+    // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
+    const notes = await Note.find({ user: user._id, 
+        title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
+    });
+    console.log('Notes fetched:', notes);
+    res.status(200).json(notes);
+  } catch (error) {
+      console.error('Error fetching notes:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  } 
 });
 
 router.delete('/delete/:noteId', async (req, res) => {

@@ -38,7 +38,7 @@ router.get('/:noteId', async (req, res) => {
     // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId).populate("blocs");
+    const note = await Note.findById(noteId).populate('blocs');
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -58,10 +58,9 @@ router.post('/', async (req, res) => {
     const user = await User.findOne({ token });
     if (!user) throw new Error('User not found');
 
-
     const newNote = await Note.create({
       title: 'Nouvelle note',
-      createdAt: new Date(), 
+      createdAt: new Date(),
       updatedAt: new Date(),
       blocs: [],
       forwardNotes: [],
@@ -85,17 +84,19 @@ router.put('/', async (req, res) => {
   try {
     const { noteId, noteData } = req.body;
 
-    const note = await Note.updateOne({ _id: noteId }, {
-      title: noteData.title,
-      updatedAt: Date.now(),
-      // blocs: noteData.blocs,
-    });
-    res.json({ result: true })
-
-  } catch(err) {
-    res.json({ result: false, error: err.message })
+    const note = await Note.updateOne(
+      { _id: noteId },
+      {
+        title: noteData.title,
+        updatedAt: Date.now(),
+        // blocs: noteData.blocs,
+      }
+    );
+    res.json({ result: true });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
   }
-})
+});
 
 router.delete('/delete/:noteId', async (req, res) => {
   try {
@@ -122,13 +123,12 @@ router.delete('/delete/:noteId', async (req, res) => {
   }
 });
 
-router.get('/search/:query/:token', async (req, res, next)=> {
-  if(req.params.query === ''){
+router.get('/search/:query/:token', async (req, res, next) => {
+  if (req.params.query === '') {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 
   try {
-
     const { token } = req.params;
     const query = req.params.query;
 
@@ -140,41 +140,40 @@ router.get('/search/:query/:token', async (req, res, next)=> {
 
     // Vérifier si query est vide
     if (!query) {
-        return res.status(400).json({ message: 'Query is required' });
+      return res.status(400).json({ message: 'Query is required' });
     }
 
     // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
-    const notes = await Note.find({ user: user._id, 
-        title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
+    const notes = await Note.find({
+      user: user._id,
+      title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
     console.log('Notes fetched:', notes);
     res.status(200).json(notes);
   } catch (error) {
-      console.error('Error fetching notes:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-  } 
+    console.error('Error fetching notes:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
-
 
 /** Get all note by date*/
 router.get('/by/date', async (req, res) => {
-
   try {
     // Définir la date cible (par exemple, 12 décembre 2024)
     const date = new Date(); // Mois en JavaScript commence à 0 (11 = décembre)
     // Définir les bornes de la journée
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-    
+
     const notes = await Note.find({
-      createdAt: { $gte: startOfDay, $lt: endOfDay }
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
-    
+
     if (notes.length === 0) {
-      console.log("No notes found with this date.");
+      console.log('No notes found with this date.');
       return res.json({ result: true, notes: [] });
-    }      
-    
+    }
+
     const notesList = notes.map((note) => {
       return {
         id: note._id,
@@ -182,12 +181,61 @@ router.get('/by/date', async (req, res) => {
       };
     });
     res.json({ result: true, notes: notesList });
-
-    } catch (err) {
-      res.json({ result: false, error: err.message });
-    }
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
 });
 
+router.put('/addfavorites/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    if (!noteId) {
+      return { result: false, error: 'Invalid ID' };
+    }
+    const noteToToggleFavorite = await Note.findById(noteId);
+    if (!noteToToggleFavorite) {
+      return { result: false, error: 'Note not found' };
+    }
+    // Inverse l'état de "isBookmarked"
+    noteToToggleFavorite.isBookmarked = !noteToToggleFavorite.isBookmarked;
+    await noteToToggleFavorite.save();
 
+    res.json({
+      result: true,
+      id: noteToToggleFavorite._id,
+      title: noteToToggleFavorite.title,
+      isBookmarked: noteToToggleFavorite.isBookmarked,
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
+/* Get all note favorites and ids/*/
+router.get('/favorites/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    const favorites = await Note.find({ user: user._id, isBookmarked: true });
+
+    res.json({
+      result: true,
+
+      favorites: favorites.map((favorite) => ({
+        id: favorite._id,
+        title: favorite.title,
+        isBookmarked: favorite.isBookmarked,
+      })),
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
 
 module.exports = router;

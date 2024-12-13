@@ -57,23 +57,62 @@ router.post("/", async (req, res) => {
     }
 });
 
-/* Get all blocs within a note */
-router.get('/:noteId', async (req, res) => {
-    try {
-      const { noteId } = req.params;
+// /* Get all blocs within a note */
+// router.get('/:noteId', async (req, res) => {
+//     try {
+//       const { noteId } = req.params;
   
-      const note = await Note.findById(noteId).populate("blocs") // Find a note with all detailed blocs
-      if (!note) throw new Error('Could not find note');
+//       const note = await Note.findById(noteId).populate("blocs") // Find a note with all detailed blocs
+//       if (!note) throw new Error('Could not find note');
 
-      res.json({ result: true, blocs: note.blocs });
+//       res.json({ result: true, blocs: note.blocs });
     
-    } catch (err) {
-      res.json({ result: false, error: err.message });
-    }
+//     } catch (err) {
+//       res.json({ result: false, error: err.message });
+//     }
+// });
+
+/* Get all blocs placed after a given position for a given note */
+router.get('/:noteId/:index', async (req, res) => {
+  try {
+    const { index , noteId} = req.params;
+    
+    // Get the note containing the blocs
+    const note = await Note.findById(noteId).populate("blocs") 
+    if (!note) throw new Error('Could not find note');
+
+    // Return all blocs greater than the param index 
+    res.json({ result: true, blocs: note.blocs.filter(bloc => bloc.position > index) });
+  
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
 });
 
-/** Save bloc when modified*/
-router.put("/", async (req, res) => {
+/* Increase all blocs' position by one */
+router.put('/increment', async (req, res) => {
+  try {
+    const { blocsIds } = req.body
+
+    const updated = await Bloc.updateMany(
+      { _id: { $in: blocsIds } }, // Filter documents where _id is in the blocsIds array
+      { $inc: { position: 1 } }  // Increment the position field by 1
+    );
+
+    if (updated.modifiedCount !== blocsIds.length ) {
+      res.json({ result: false, error: "Not all blocs position were updated" });
+      return 
+    }
+    res.json({ result: true })
+  
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
+
+/** Save bloc when modified */
+router.put("/save", async (req, res) => {
     const isBodyValid = checkBody(req.body, ["blocId", "type"]); // check only type and bloc id (language can be null, and content can be "")
     if (!isBodyValid) throw new Error("Missing or empty body parameter")
     

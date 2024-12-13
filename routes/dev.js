@@ -25,6 +25,7 @@ router.post('/', async (req, res) => {
    })
 
    const dataApi = await response.json() 
+   console.log(dataApi)
    res.json({result: true, data: dataApi});
 })
 

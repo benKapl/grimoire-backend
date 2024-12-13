@@ -2,6 +2,7 @@
 var express = require('express');
 var router = express.Router();
 
+const { ObjectId } = require("mongoose").Types
 const { checkBody } = require("../modules/checkBody");
 const Tag = require("../models/tags");
 const User = require("../models/users");
@@ -66,4 +67,26 @@ router.post('/', async (req, res) => {
   }
 })
 
+router.get('/:noteId', async (req,res) => {
+  try {
+    const { noteId } = req.params;
+
+    const foundTags = await Tag.aggregate([
+      {
+        $match: {
+          notes: new ObjectId(noteId)
+        }
+      },
+      {
+        $project: {
+          value: 1
+        }
+      }
+    ])
+
+    res.json({ tags: foundTags })
+  } catch(error) {
+    return res.json({ result: false, error: error.message });
+  }
+})
 module.exports = router;

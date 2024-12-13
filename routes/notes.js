@@ -123,12 +123,14 @@ router.delete('/delete/:noteId', async (req, res) => {
   }
 });
 
-router.get('/search/:query/:token', async (req, res, next) => {
-  if (req.params.query === '') {
+/** Get note by Title*/
+router.get('/search/:query/:token', async (req, res, next)=> {
+  if(req.params.query === ''){
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 
   try {
+
     const { token } = req.params;
     const query = req.params.query;
 
@@ -140,50 +142,95 @@ router.get('/search/:query/:token', async (req, res, next) => {
 
     // Vérifier si query est vide
     if (!query) {
-      return res.status(400).json({ message: 'Query is required' });
+        return res.status(400).json({ message: 'Query is required' });
     }
 
     // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
-    const notes = await Note.find({
-      user: user._id,
-      title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
+    const notes = await Note.find({ user: user._id, 
+        title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
     });
     console.log('Notes fetched:', notes);
     res.status(200).json(notes);
   } catch (error) {
-    console.error('Error fetching notes:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
+      console.error('Error fetching notes:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+  } 
 });
 
-/** Get all note by date*/
-router.get('/by/date', async (req, res) => {
+/** Get note by date*/
+router.post('/by/date', async (req, res) => {
+  
+  checkBody(req.body, ['date']);
+  
   try {
-    // Définir la date cible (par exemple, 12 décembre 2024)
-    const date = new Date(); // Mois en JavaScript commence à 0 (11 = décembre)
-    // Définir les bornes de la journée
+    const date = new Date(req.body.date);
+    
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-
+    console.log("startOfDay :",startOfDay)
+    console.log("endOfDay :",endOfDay)
+    
     const notes = await Note.find({
-      createdAt: { $gte: startOfDay, $lt: endOfDay },
+      createdAt: { $gte: startOfDay, $lt: endOfDay }
     });
+    console.log("notes :",notes)
 
     if (notes.length === 0) {
-      console.log('No notes found with this date.');
+      console.log("No notes found with this date.");
       return res.json({ result: true, notes: [] });
-    }
-
+    }      
+    
     const notesList = notes.map((note) => {
       return {
         id: note._id,
         title: note.title,
       };
     });
+    console.log("notesList :",notesList)
+
     res.json({ result: true, notes: notesList });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
+
+    } catch (err) {
+      res.json({ result: false, error: err.message });
+    }
+});
+
+/** Get note by updated */
+router.post('/by/update', async (req, res) => {
+  
+  checkBody(req.body, ['date']);
+  
+  try {
+    const date = new Date(req.body.date);
+    
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
+    console.log("startOfDay :",startOfDay)
+    console.log("endOfDay :",endOfDay)
+    
+    const notes = await Note.find({
+      updatedAt : { $gte: startOfDay, $lt: endOfDay }
+    });
+    console.log("notes :",notes)
+    
+    if (notes.length === 0) {
+      console.log("No notes found with this date.");
+      return res.json({ result: true, notes: [] });
+    }      
+    
+    const notesList = notes.map((note) => {
+      return {
+        id: note._id,
+        title: note.title,
+      };
+    });
+    console.log("notesList :",notesList)
+
+    res.json({ result: true, notes: notesList });
+
+    } catch (err) {
+      res.json({ result: false, error: err.message });
+    }
 });
 
 router.put('/addfavorites/:noteId', async (req, res) => {

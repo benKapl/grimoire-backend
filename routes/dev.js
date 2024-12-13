@@ -7,13 +7,13 @@ const DevLang = require("../models/dev_languages")
 const jdoodleApi = process.env.JDOODLE_API
 
 /* Request to execute code */
-router.post('/dev', async (req, res) => {
-  const { script } = req.body
+router.post('/', async (req, res) => {
+  const { code } = req.body
 
   const request = {
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    script: script.replace(/\n/g, '\n'),
+    script: code, //.replace(/\n/g, '\n'),
     language: "nodejs",
     versionIndex: "0"
   }

@@ -13,15 +13,30 @@ router.post("/", async (req, res) => {
     
     try  {
       const { noteId, type, language } = req.body
-      console.log("type => ", type)
 
-      const newBloc = await Bloc.create({
-        type,
-        language,
-        content: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      let newBloc // Bloc initial values are based on type
+      if (type === "text") {
+        newBloc = await Bloc.create({
+          type,
+          language,
+          height: 38,
+          lineCount: null,
+          content: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      } else if (type === "code") {
+        newBloc = await Bloc.create({
+          type,
+          language,
+          height: null,
+          lineCount: 1,
+          content: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+      
       if (!newBloc) throw new Error('Could not create bloc');
 
       const updatedNote = await Note.updateOne(

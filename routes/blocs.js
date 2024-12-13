@@ -8,15 +8,16 @@ const Note = require('../models/notes');
 
 /** Create a new bloc in a note */
 router.post("/", async (req, res) => {
-    const isBodyValid = checkBody(req.body, ["type", "noteId"]); // check only type (language can be null)
+    const isBodyValid = checkBody(req.body, ["position", "type", "noteId"]); // check only type and position (language can be null)
     if (!isBodyValid) throw new Error("Missing or empty body parameter")
     
     try  {
-      const { noteId, type, language } = req.body
+      const { position, noteId, type, language } = req.body
 
       let newBloc // Bloc initial values are based on type
       if (type === "text") {
         newBloc = await Bloc.create({
+          position,
           type,
           language,
           height: 38,
@@ -27,6 +28,7 @@ router.post("/", async (req, res) => {
         });
       } else if (type === "code") {
         newBloc = await Bloc.create({
+          position,
           type,
           language,
           height: null,

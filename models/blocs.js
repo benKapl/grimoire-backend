@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 
 const blocsSchema = mongoose.Schema({
+    position: Number,
     type: String,
     content: String,
     height: Number,

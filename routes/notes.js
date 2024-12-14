@@ -202,16 +202,12 @@ router.post('/by/update', async (req, res) => {
   
   try {
     const date = new Date(req.body.date);
-    
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-    console.log("startOfDay :",startOfDay)
-    console.log("endOfDay :",endOfDay)
     
     const notes = await Note.find({
       updatedAt : { $gte: startOfDay, $lt: endOfDay }
     });
-    console.log("notes :",notes)
     
     if (notes.length === 0) {
       console.log("No notes found with this date.");
@@ -219,12 +215,14 @@ router.post('/by/update', async (req, res) => {
     }      
     
     const notesList = notes.map((note) => {
-      return {
-        id: note._id,
-        title: note.title,
-      };
+      if(note.createdAt !== note.title){
+        return {
+          id: note._id,
+          title: note.title,
+        };
+      }
+      return
     });
-    console.log("notesList :",notesList)
 
     res.json({ result: true, notes: notesList });
 

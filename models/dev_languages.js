@@ -1,7 +1,10 @@
 const mongoose = require("mongoose")
 
 const devLangsSchema = mongoose.Schema({
-    value: String,
+    displayValue: String,
+    editorValue: String,
+    apiValue: String,
+    isExecutable: Boolean,
 });
 
 const DevLang = mongoose.model("dev_languages", devLangsSchema);

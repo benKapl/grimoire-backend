@@ -5,16 +5,17 @@ const { checkBody } = require("../modules/checkBody")
 const DevLang = require("../models/dev_languages")
 
 const jdoodleApi = process.env.JDOODLE_API
+// jdoodle doc : https://docs.jdoodle.com/integrating-compiler-ide-to-your-application/compiler-api/rest-api
 
 /* Request to execute code */
 router.post('/', async (req, res) => {
-  const { code } = req.body
+  const { code, language } = req.body
 
   const request = {
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     script: code, //.replace(/\n/g, '\n'),
-    language: "nodejs",
+    language,
     versionIndex: "0"
   }
 

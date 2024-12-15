@@ -193,11 +193,12 @@ router.post('/by/date', async (req, res) => {
 
 /** Get note by updated */
 router.post('/by/update', async (req, res) => {
-  
   checkBody(req.body, ['date']);
   
   try {
     const date = new Date(req.body.date);
+    
+
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
     
@@ -205,19 +206,30 @@ router.post('/by/update', async (req, res) => {
       updatedAt : { $gte: startOfDay, $lt: endOfDay }
     });
     
+    //console.log("notes :", notes)
     if (notes.length === 0) {
       console.log("No notes found with this date.");
       return res.json({ result: true, notes: [] });
     }      
     
-    const notesList = notes.map((note) => {
-      if(note.createdAt !== note.title){
+    const notesList = notes.filter(note => 
+      note.createdAt.getDate() !== note.updatedAt.getDate() 
+      || note.createdAt.getMonth() !== note.updatedAt.getMonth()
+      || note.createdAt.getFullYear() !== note.updatedAt.getFullYear() 
+    )
+    .map((note) => {
         return {
           id: note._id,
           title: note.title,
-        };
-      }
-      return
+          createdAt:note.createdAt,
+          updatedAt:note.updatedAt
+        }
+      // console.log('jour :',note.createdAt.getDate()) 
+      console.log('mois :',note.updatedAt.getMonth())
+      console.log('année :',note.updatedAt.getFullYear())
+      // if(note.createdAt.getDate() !== note.updatedAt.getDate()){
+      // }
+      
     });
 
     res.json({ result: true, notes: notesList });

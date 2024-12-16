@@ -56,7 +56,7 @@ router.post("/languages", async (req, res) => {
 })
 
 /* Get all dev languages in database */
-router.get('/languages/:displayValue', async (req, res) => {
+router.get('/languages', async (req, res) => {
   try {
     const devLangs = await DevLang.find()
 

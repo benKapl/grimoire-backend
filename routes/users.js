@@ -59,6 +59,27 @@ router.post('/signin', (req, res) => {
   });
 });
 
+/** Change user username in DB */
+router.put('/update/username', async (req, res) => {
+  try {
+    const { token, username } = req.body
+
+    const userToUpdate = await User.findOne({ token })
+    if (!userToUpdate) throw new Error("Could not find user")
+      
+    await User.updateOne(
+      { token },
+      { username },
+    )
+    // console.log("update =>", update)
+    // if (update.modifiedCount != 1) throw new Error("Could not update user username")
+    res.json({ result: true, username })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
+
 /** Change user default language in DB */
 router.put('/update/devlang', async (req, res) => {
   try {
@@ -66,17 +87,15 @@ router.put('/update/devlang', async (req, res) => {
 
     const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
     if (!devLang) throw new Error('Could not retrieve dev language');
-    console.log("devlang => ", devLang)
     
     const userToUpdate = await User.findOne({ token })
     if (!userToUpdate) throw new Error("Could not find user")
-    console.log("user => ", userToUpdate)
       
     const update = await User.updateOne(
       { token },
       { defaultDevLang: devLang._id },
     )
-    console.log("update => ", update)
+
     if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
     res.json({ result: true })
 
@@ -84,5 +103,29 @@ router.put('/update/devlang', async (req, res) => {
     res.json({ result: false, error: err.message })
   }
 })
+
+/** Change BLABLABLA */
+// router.put('/update/devlang', async (req, res) => {
+//   try {
+//     const { token, profilPic, defaultEditorTheme } = req.body
+
+//     const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
+//     if (!devLang) throw new Error('Could not retrieve dev language');
+    
+//     const userToUpdate = await User.findOne({ token })
+//     if (!userToUpdate) throw new Error("Could not find user")
+      
+//     const update = await User.updateOne(
+//       { token },
+//       { defaultDevLang: devLang._id },
+//     )
+
+//     if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
+//     res.json({ result: true })
+
+//   } catch(err) {
+//     res.json({ result: false, error: err.message })
+//   }
+// })
 
 module.exports = router;

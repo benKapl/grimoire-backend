@@ -82,11 +82,15 @@ router.get('/:noteId', async (req,res) => {
           value: 1
         }
       }
-    ])
+    ]) 
 
     res.json({ tags: foundTags })
   } catch(error) {
     return res.json({ result: false, error: error.message });
   }
+})
+
+router.delete('/', async (req, res) => {
+
 })
 module.exports = router;

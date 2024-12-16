@@ -124,13 +124,12 @@ router.delete('/delete/:noteId', async (req, res) => {
 });
 
 /** Get note by Title*/
-router.get('/search/:query/:token', async (req, res, next)=> {
-  if(req.params.query === ''){
+router.get('/search/:query/:token', async (req, res, next) => {
+  if (req.params.query === '') {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 
   try {
-
     const { token } = req.params;
     const query = req.params.query;
 
@@ -142,41 +141,41 @@ router.get('/search/:query/:token', async (req, res, next)=> {
 
     // Vérifier si query est vide
     if (!query) {
-        return res.status(400).json({ message: 'Query is required' });
+      return res.status(400).json({ message: 'Query is required' });
     }
 
     // Utiliser une expression régulière pour une recherche partielle (insensible à la casse)
-    const notes = await Note.find({ user: user._id, 
-        title: { $regex: `^${query}`, $options: 'i' } // 'i' rend la recherche insensible à la casse
+    const notes = await Note.find({
+      user: user._id,
+      title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
     console.log('Notes fetched:', notes);
     res.status(200).json(notes);
   } catch (error) {
-      console.error('Error fetching notes:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-  } 
+    console.error('Error fetching notes:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 });
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  
   checkBody(req.body, ['date']);
-  
+
   try {
     const date = new Date(req.body.date);
-    
+
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-    
+
     const notes = await Note.find({
-      createdAt: { $gte: startOfDay, $lt: endOfDay }
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
     if (notes.length === 0) {
-      console.log("No notes found with this date.");
+      console.log('No notes found with this date.');
       return res.json({ result: true, notes: [] });
-    }      
-    
+    }
+
     const notesList = notes.map((note) => {
       return {
         id: note._id,
@@ -185,58 +184,56 @@ router.post('/by/date', async (req, res) => {
     });
 
     res.json({ result: true, notes: notesList });
-
-    } catch (err) {
-      res.json({ result: false, error: err.message });
-    }
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
 });
 
 /** Get note by updated */
 router.post('/by/update', async (req, res) => {
   checkBody(req.body, ['date']);
-  
+
   try {
     const date = new Date(req.body.date);
-    
 
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-    
+
     const notes = await Note.find({
-      updatedAt : { $gte: startOfDay, $lt: endOfDay }
+      updatedAt: { $gte: startOfDay, $lt: endOfDay },
     });
-    
+
     //console.log("notes :", notes)
     if (notes.length === 0) {
-      console.log("No notes found with this date.");
+      console.log('No notes found with this date.');
       return res.json({ result: true, notes: [] });
-    }      
-    
-    const notesList = notes.filter(note => 
-      note.createdAt.getDate() !== note.updatedAt.getDate() 
-      || note.createdAt.getMonth() !== note.updatedAt.getMonth()
-      || note.createdAt.getFullYear() !== note.updatedAt.getFullYear() 
-    )
-    .map((note) => {
+    }
+
+    const notesList = notes
+      .filter(
+        (note) =>
+          note.createdAt.getDate() !== note.updatedAt.getDate() ||
+          note.createdAt.getMonth() !== note.updatedAt.getMonth() ||
+          note.createdAt.getFullYear() !== note.updatedAt.getFullYear()
+      )
+      .map((note) => {
         return {
           id: note._id,
           title: note.title,
-          createdAt:note.createdAt,
-          updatedAt:note.updatedAt
-        }
-      // console.log('jour :',note.createdAt.getDate()) 
-      console.log('mois :',note.updatedAt.getMonth())
-      console.log('année :',note.updatedAt.getFullYear())
-      // if(note.createdAt.getDate() !== note.updatedAt.getDate()){
-      // }
-      
-    });
+          createdAt: note.createdAt,
+          updatedAt: note.updatedAt,
+        };
+        // console.log('jour :',note.createdAt.getDate())
+        console.log('mois :', note.updatedAt.getMonth());
+        console.log('année :', note.updatedAt.getFullYear());
+        // if(note.createdAt.getDate() !== note.updatedAt.getDate()){
+        // }
+      });
 
     res.json({ result: true, notes: notesList });
-
-    } catch (err) {
-      res.json({ result: false, error: err.message });
-    }
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
 });
 
 router.put('/addfavorites/:noteId', async (req, res) => {
@@ -288,6 +285,26 @@ router.get('/favorites/:token', async (req, res) => {
     });
   } catch (err) {
     res.json({ result: false, error: err.message });
+  }
+});
+
+/* Get the related Note */
+router.get('/linked/forward/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    const notes = await Note.findById(noteId).populate('forwardNotes');
+    if (!notes) throw new Error('Could note find note');
+
+    res.json({
+      result: true,
+      forwardNotes: notes.forwardNotes.map((note) => ({
+        id: note._id,
+        title: note.title,
+      })),
+    });
+  } catch (err) {
+    res.json({ restult: false, error: err.message });
   }
 });
 

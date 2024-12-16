@@ -3,6 +3,7 @@ var router = express.Router();
 
 const { checkBody } = require("../modules/checkBody")
 const DevLang = require("../models/dev_languages")
+const EditorTheme = require("../models/editor_themes")
 
 const jdoodleApi = process.env.JDOODLE_API
 // jdoodle doc : https://docs.jdoodle.com/integrating-compiler-ide-to-your-application/compiler-api/rest-api
@@ -49,7 +50,7 @@ router.post("/languages", async (req, res) => {
     });
 
     if (!newDevLang) throw new Error('Could not create language');
-    res.json({ result: true, note: newDevLang });
+    res.json({ result: true, devLang: newDevLang });
   } catch (err) {
     res.json({ result: false, error: err.message });
   }
@@ -69,20 +70,42 @@ router.get('/languages', async (req, res) => {
   }
 })
 
-// /* Get one specific dev language */
-// router.get('/languages/:displayValue', async (req, res) => {
-//   try {
-//     const { displayValue } = req.params
-//     const devLang = await DevLang.findOne({ displayValue })
+/* Create a new editor_theme in database */
+router.post("/editor_themes", async (req, res) => {
+  const isBodyValid = checkBody(req.body, ['displayValue', 'editorValue']); // isExecutable not included because if false would not pass checkBody
+  if (!isBodyValid) throw new Error('Missing or empty body parameter');
 
-//     if (!devLang) throw new Error('Could not retrieve dev language');
+  try {
+    const { displayValue, editorValue } = req.body;
+
+    const editorTheme = await EditorTheme.findOne({ displayValue });
+    if (editorTheme) throw new Error('Theme already is database');
+
+    const newEditorTheme = await EditorTheme.create({
+      displayValue,
+      editorValue,
+    });
     
-//     return res.json({ result: true, dev_languages: devLang });
+    if (!newEditorTheme) throw new Error('Could not create theme');
+    res.json({ result: true, editorTheme: newEditorTheme });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+})
 
-//   } catch(error) {
-//     return res.json({ result: false, error: error.message });
-//   }
-// })
+/* Get all editor_themes in database */
+router.get('/editor_themes', async (req, res) => {
+  try {
+    const editorThemes = await EditorTheme.find()
+
+    if ((!editorThemes) || (editorThemes.length === 0)) throw new Error('Could not retrieve themes');
+    
+    return res.json({ result: true, editor_themes: editorThemes });
+
+  } catch(error) {
+    return res.json({ result: false, error: error.message });
+  }
+})
 
 
 module.exports = router;

@@ -7,6 +7,7 @@ const usersSchema = mongoose.Schema({
     token: String,
     profilePic: String, 
     defaultDevLang: { type: mongoose.Schema.Types.ObjectId, ref: 'dev_languages' } || null,
+    defaultEditorTheme: { type: mongoose.Schema.Types.ObjectId, ref: 'editor_themes' } || null,
     isDark: Boolean,
 });
 

@@ -7,7 +7,7 @@ const DevLang = require("../models/dev_languages")
 const jdoodleApi = process.env.JDOODLE_API
 // jdoodle doc : https://docs.jdoodle.com/integrating-compiler-ide-to-your-application/compiler-api/rest-api
 
-/* Request to execute code */
+/* Request to execute code in tierce service */
 router.post('/code', async (req, res) => {
   const { code, language } = req.body
 
@@ -30,6 +30,7 @@ router.post('/code', async (req, res) => {
    res.json({result: true, data: dataApi});
 })
 
+/* Create a new language in database */
 router.post("/languages", async (req, res) => {
   const isBodyValid = checkBody(req.body, ['displayValue', 'editorValue', "apiValue"]); // isExecutable not included because if false would not pass checkBody
   if (!isBodyValid) throw new Error('Missing or empty body parameter');
@@ -54,8 +55,8 @@ router.post("/languages", async (req, res) => {
   }
 })
 
-router.get('/languages', async (req, res) => {
-  
+/* Get all dev languages in database */
+router.get('/languages/:displayValue', async (req, res) => {
   try {
     const devLangs = await DevLang.find()
 
@@ -67,6 +68,21 @@ router.get('/languages', async (req, res) => {
     return res.json({ result: false, error: error.message });
   }
 })
+
+// /* Get one specific dev language */
+// router.get('/languages/:displayValue', async (req, res) => {
+//   try {
+//     const { displayValue } = req.params
+//     const devLang = await DevLang.findOne({ displayValue })
+
+//     if (!devLang) throw new Error('Could not retrieve dev language');
+    
+//     return res.json({ result: true, dev_languages: devLang });
+
+//   } catch(error) {
+//     return res.json({ result: false, error: error.message });
+//   }
+// })
 
 
 module.exports = router;

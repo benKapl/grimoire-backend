@@ -5,6 +5,8 @@ const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/users');
+const DevLang = require("../models/dev_languages")
+
 const { checkBody } = require('../modules/checkBody');
 
 /** Create user in DB */
@@ -25,6 +27,7 @@ router.post('/signup', (req, res) => {
     password: hash,
     token: uid2(32),
     profilePic: req.body.profilePic | null,
+    defaultDevLang: null,
     isDark: false,
     //devLang: 'dev_1',
     
@@ -55,5 +58,31 @@ router.post('/signin', (req, res) => {
     }
   });
 });
+
+/** Change user default language in DB */
+router.put('/update/devlang', async (req, res) => {
+  try {
+    const { token, username, profilPic, defaultDevLang, defaultEditorTheme } = req.body
+
+    const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
+    if (!devLang) throw new Error('Could not retrieve dev language');
+    console.log("devlang => ", devLang)
+    
+    const userToUpdate = await User.findOne({ token })
+    if (!userToUpdate) throw new Error("Could not find user")
+    console.log("user => ", userToUpdate)
+      
+    const update = await User.updateOne(
+      { token },
+      { defaultDevLang: devLang._id },
+    )
+    console.log("update => ", update)
+    if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
+    res.json({ result: true })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
 
 module.exports = router;

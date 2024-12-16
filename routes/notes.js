@@ -159,16 +159,23 @@ router.get('/search/:query/:token', async (req, res, next)=> {
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  
-  checkBody(req.body, ['date']);
+  console.log("back 1");
+  checkBody(req.body, ['token','date']);
   
   try {
     const date = new Date(req.body.date);
+    const { token } = req.body;
+   
+    const user = await User.findOne({ token });
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
     
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
     
     const notes = await Note.find({
+      user: user._id,
       createdAt: { $gte: startOfDay, $lt: endOfDay }
     });
 

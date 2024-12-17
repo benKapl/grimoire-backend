@@ -149,7 +149,6 @@ router.get('/search/:query/:token', async (req, res, next) => {
       user: user._id,
       title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
-    console.log('Notes fetched:', notes);
     res.status(200).json(notes);
   } catch (error) {
     console.error('Error fetching notes:', error);
@@ -159,17 +158,20 @@ router.get('/search/:query/:token', async (req, res, next) => {
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  console.log('back 1');
-  checkBody(req.body, ['token', 'date']);
-
+  checkBody(req.body, ['token','date']);
   try {
     const date = new Date(req.body.date);
-
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
+    
+    const { token } = req.body;
+    const user = await User.findOne({ token });
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
 
-    const notes = await Note.find({
-      createdAt: { $gte: startOfDay, $lt: endOfDay },
+    const notes = await Note.find({ user: user._id,
+      createdAt: { $gte: startOfDay, $lt: endOfDay }
     });
 
     if (notes.length === 0) {
@@ -200,7 +202,13 @@ router.post('/by/update', async (req, res) => {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
 
-    const notes = await Note.find({
+    const { token } = req.body;
+    const user = await User.findOne({ token });
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    const notes = await Note.find({ user: user._id,
       updatedAt: { $gte: startOfDay, $lt: endOfDay },
     });
 

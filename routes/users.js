@@ -5,6 +5,9 @@ const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/users');
+const DevLang = require("../models/dev_languages")
+const EditorTheme = require("../models/editor_themes")
+
 const { checkBody } = require('../modules/checkBody');
 
 /** Create user in DB */
@@ -25,6 +28,8 @@ router.post('/signup', (req, res) => {
     password: hash,
     token: uid2(32),
     profilePic: req.body.profilePic | null,
+    defaultDevLang: null,
+    defaultEditorTheme: null,
     isDark: false,
     //devLang: 'dev_1',
     
@@ -55,5 +60,98 @@ router.post('/signin', (req, res) => {
     }
   });
 });
+
+/** Change user username in DB */
+router.put('/update/username', async (req, res) => {
+  try {
+    const { token, username } = req.body
+
+    const userToUpdate = await User.findOne({ token })
+    if (!userToUpdate) throw new Error("Could not find user")
+      
+    await User.updateOne(
+      { token },
+      { username },
+    )
+    // console.log("update =>", update)
+    // if (update.modifiedCount != 1) throw new Error("Could not update user username")
+    res.json({ result: true, username })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
+
+/** Change user default language in DB */
+router.put('/update/devlang', async (req, res) => {
+  try {
+    const { token, username, profilPic, defaultDevLang, defaultEditorTheme } = req.body
+
+    const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
+    if (!devLang) throw new Error('Could not retrieve dev language');
+    
+    const userToUpdate = await User.findOne({ token })
+    if (!userToUpdate) throw new Error("Could not find user")
+      
+    const update = await User.updateOne(
+      { token },
+      { defaultDevLang: devLang._id },
+    )
+
+    if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
+    res.json({ result: true })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
+
+/** Change user default language in DB */
+router.put('/update/editorTheme', async (req, res) => {
+  try {
+    const { token, defaultEditorTheme } = req.body
+
+    const editorTheme = await EditorTheme.findOne({ displayValue: defaultEditorTheme })
+    if (!editorTheme) throw new Error('Could not retrieve editorTheme');
+    
+    const userToUpdate = await User.findOne({ token })
+    if (!userToUpdate) throw new Error("Could not find user")
+      
+    const update = await User.updateOne(
+      { token },
+      { defaultEditorTheme: editorTheme._id },
+    )
+
+    if (update.modifiedCount !== 1) throw new Error("Could not update user editorTheme")
+    res.json({ result: true })
+
+  } catch(err) {
+    res.json({ result: false, error: err.message })
+  }
+})
+
+/** Change BLABLABLA */
+// router.put('/update/devlang', async (req, res) => {
+//   try {
+//     const { token, profilPic, defaultEditorTheme } = req.body
+
+//     const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
+//     if (!devLang) throw new Error('Could not retrieve dev language');
+    
+//     const userToUpdate = await User.findOne({ token })
+//     if (!userToUpdate) throw new Error("Could not find user")
+      
+//     const update = await User.updateOne(
+//       { token },
+//       { defaultDevLang: devLang._id },
+//     )
+
+//     if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
+//     res.json({ result: true })
+
+//   } catch(err) {
+//     res.json({ result: false, error: err.message })
+//   }
+// })
 
 module.exports = router;

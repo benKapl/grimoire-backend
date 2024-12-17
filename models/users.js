@@ -6,8 +6,9 @@ const usersSchema = mongoose.Schema({
     password: String,
     token: String,
     profilePic: String, 
+    defaultDevLang: { type: mongoose.Schema.Types.ObjectId, ref: 'dev_languages' } || null,
+    defaultEditorTheme: { type: mongoose.Schema.Types.ObjectId, ref: 'editor_themes' } || null,
     isDark: Boolean,
-    //devLang: { type: mongoose.Schema.Types.ObjectId, ref: 'dev_languages' },
 });
 
 const User = mongoose.model("user", usersSchema);

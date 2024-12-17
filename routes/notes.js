@@ -224,11 +224,6 @@ router.post('/by/update', async (req, res) => {
           createdAt: note.createdAt,
           updatedAt: note.updatedAt,
         };
-        // console.log('jour :',note.createdAt.getDate())
-        console.log('mois :', note.updatedAt.getMonth());
-        console.log('année :', note.updatedAt.getFullYear());
-        // if(note.createdAt.getDate() !== note.updatedAt.getDate()){
-        // }
       });
 
     res.json({ result: true, notes: notesList });

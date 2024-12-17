@@ -6,6 +6,7 @@ const { checkBody } = require('../modules/checkBody');
 const Bloc = require('../models/blocs');
 const Note = require('../models/notes');
 
+
 /** Create a new bloc in a note */
 router.post('/', async (req, res) => {
   const isBodyValid = checkBody(req.body, ['position', 'type', 'noteId']); // check only type and position (language can be null)
@@ -37,6 +38,17 @@ router.post('/', async (req, res) => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+    }else if (type === 'internal link') {
+      newBloc = await Bloc.create({
+        position,
+        type,
+        language,
+        height: null,
+        lineCount: 1,
+        content: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
     }
 
     if (!newBloc) throw new Error('Could not create bloc');
@@ -56,20 +68,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// /* Get all blocs within a note */
-// router.get('/:noteId', async (req, res) => {
-//     try {
-//       const { noteId } = req.params;
-
-//       const note = await Note.findById(noteId).populate("blocs") // Find a note with all detailed blocs
-//       if (!note) throw new Error('Could not find note');
-
-//       res.json({ result: true, blocs: note.blocs });
-
-//     } catch (err) {
-//       res.json({ result: false, error: err.message });
-//     }
-// });
 
 /* Get all blocs placed after a given position for a given note */
 router.get('/:noteId/:index', async (req, res) => {
@@ -173,4 +171,38 @@ router.delete('/:blocId/:noteId', async (req, res) => {
   }
 });
 
+router.put("/referenceLink", async (req, res) => {
+  const isBodyValid = checkBody(req.body, ['currentNoteId', 'refNoteId']); // isExecutable not included because if false would not pass checkBody
+  if (!isBodyValid) throw new Error('Missing or empty body parameter');
+
+  try {
+    const note = await Note.findById(req.body.currentNoteId);
+    console.log('note forward :',note.forwardNotes)
+    console.log('note ref :',req.body.refNoteId)
+    console.log('si cette valeur existe dans note :',note.forwardNotes.includes(req.body.refNoteId))
+
+    if (!note.forwardNotes.includes(req.body.refNoteId)){
+      // update forward current note
+      const updateforwardNote = await Note.updateOne(
+        { _id: req.body.currentNoteId },
+        { $push: { forwardNotes: req.body.refNoteId } }
+      );
+      console.log('si cette valeur existe dans note 2:',note.backwardNotes.includes(req.body.currentNoteId))
+      if (!note.backwardNotes.includes(req.body.currentNoteI)){
+        // update backward referenced note
+        const updatebackwardNote = await Note.updateOne(
+          { _id: req.body.refNoteId },
+          { $push: { backwardNotes: req.body.currentNoteId } }
+        );
+        return res.json({result: true});
+      }
+      return res.json({result: 'this is already a forward note'});
+    }
+    
+  res.json({result: 'this note cannot ref itself'});
+} catch (err) {
+  res.json({ result: false, error: err.message });
+}
+
+})
 module.exports = router;

@@ -17,7 +17,15 @@ router.post('/', async (req, res) => {
     };
 
 
-    const { token, noteId, value } = req.body
+    const { token, noteId } = req.body
+
+    let value = req.body.value.trim();
+    // remplace les '#'
+    if (value.length && value.includes("#")) {
+      value = value.replaceAll("#", "").trim()
+    }
+
+
     // verifier si le user existe
     const user = await User.findOne({token})
     if (!user) {
@@ -92,25 +100,29 @@ router.get('/:noteId', async (req,res) => {
 
 router.delete('/', async (req, res) => {
   try {
-    const { tagId, token, noteId } = req.body;
-    console.log("tagId", tagId)
-    const tag = await Tag.findById(tagId)
+    const {value, token, noteId } = req.body;
+    //console.log("tagId", tagId)
+    const tag = await Tag.findOne({value})
     const user = await User.findOne({token})
     console.log(user)
     if (!user) {
+      // si aucun user, early return
       res.json({ result: false, error: 'User not found '});
       return
     }
     if (!tag) {
+      // si aucun tag, early return
       res.json({ result: false, error: 'tag not found '});
       return
     } 
     if (tag.notes.length === 1) {
-      await Tag.findByIdAndDelete(tagId)
+      // si le tableau notes contient 1 seule note delete le tag
+      await Tag.findByIdAndDelete(tag._id)
       return res.json({ result: true })
     } else {
       await Tag.findByIdAndUpdate(
-        tagId,
+        // si le tableau notes contient plusieurs notes on retirne la noteId du tableau 
+        tag._id,
         {$pull: {notes: noteId}}
       )
 

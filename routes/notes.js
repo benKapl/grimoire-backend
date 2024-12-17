@@ -159,16 +159,19 @@ router.get('/search/:query/:token', async (req, res, next) => {
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  console.log("back 1");
   checkBody(req.body, ['token','date']);
-  
   try {
     const date = new Date(req.body.date);
-    
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
+    
+    const { token } = req.body;
+    const user = await User.findOne({ token });
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
 
-    const notes = await Note.find({
+    const notes = await Note.find({ user: user._id,
       createdAt: { $gte: startOfDay, $lt: endOfDay }
     });
 
@@ -200,7 +203,13 @@ router.post('/by/update', async (req, res) => {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
 
-    const notes = await Note.find({
+    const { token } = req.body;
+    const user = await User.findOne({ token });
+    if (!user) {
+      return res.json({ result: false, error: 'User not found' });
+    }
+
+    const notes = await Note.find({ user: user._id,
       updatedAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
@@ -224,11 +233,6 @@ router.post('/by/update', async (req, res) => {
           createdAt: note.createdAt,
           updatedAt: note.updatedAt,
         };
-        // console.log('jour :',note.createdAt.getDate())
-        console.log('mois :', note.updatedAt.getMonth());
-        console.log('année :', note.updatedAt.getFullYear());
-        // if(note.createdAt.getDate() !== note.updatedAt.getDate()){
-        // }
       });
 
     res.json({ result: true, notes: notesList });
@@ -305,7 +309,26 @@ router.get('/linked/forward/:noteId', async (req, res) => {
       })),
     });
   } catch (err) {
-    res.json({ restult: false, error: err.message });
+    res.json({ result: false, error: err.message });
+  }
+});
+
+router.get('/linked/backward/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    const notes = await Note.findById(noteId).populate('backwardNotes');
+    if (!notes) throw new Error('Could note find note');
+
+    res.json({
+      result: true,
+      backwardNotes: notes.backwardNotes.map((note) => ({
+        id: note._id,
+        title: note.title,
+      })),
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
   }
 });
 

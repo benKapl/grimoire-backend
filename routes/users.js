@@ -12,35 +12,55 @@ const { checkBody } = require('../modules/checkBody');
 
 /** Create user in DB */
 router.post('/signup', (req, res) => {
-  if (!checkBody(req.body, ['username', 'password'])) {
-    res.json({ result: false, error: 'Missing or empty fields' });
-    return;
-  }
-
-  User.findOne({ username: req.body.username }).then((data) => {
-    if (data === null) {
-      const hash = bcrypt.hashSync(req.body.password, 10);
-
-      const newUser = new User({
-        username: req.body.username,
-        email: req.body.email,
-        password: hash,
-        token: uid2(32),
-        profilePic: req.body.profilePic | null,
-        defaultDevLang: null,
-        defaultEditorTheme: null,
-        isDark: false,
-        //devLang: 'dev_1',
-      });
-
-      newUser.save().then((data) => {
-        res.json({ result: true, username: data.username, token: data.token });
-      });
-    } else {
-      // User already exists in database
-      res.json({ result: false, error: 'User already exists' });
+  const { googleToken, email, username, password } = req.body;
+  if (googleToken) {
+    if (!checkBody(req.body, ['googleToken'])) {
+      return res.json({ result: false, error: 'Missing Google token' });
     }
-  });
+    const decoded = jwt.decode(googleToken);
+    if (!decoded) {
+      return res.json({ result: false, error: 'Invalid Google token' });
+    }
+    const { email, name } = decoded;
+
+    User.findOne({ email }).then((data) => {
+      if (data === null) {
+      }
+    });
+  } else {
+    if (!checkBody(req.body, ['username', 'password'])) {
+      res.json({ result: false, error: 'Missing or empty fields' });
+      return;
+    }
+    User.findOne({ username: req.body.username }).then((data) => {
+      if (data === null) {
+        const hash = bcrypt.hashSync(req.body.password, 10);
+
+        const newUser = new User({
+          username: req.body.username,
+          email: req.body.email,
+          password: hash,
+          token: uid2(32),
+          profilePic: req.body.profilePic | null,
+          defaultDevLang: null,
+          defaultEditorTheme: null,
+          isDark: false,
+          //devLang: 'dev_1',
+        });
+
+        newUser.save().then((data) => {
+          res.json({
+            result: true,
+            username: data.username,
+            token: data.token,
+          });
+        });
+      } else {
+        // User already exists in database
+        res.json({ result: false, error: 'User already exists' });
+      }
+    });
+  }
 });
 
 /** Connect already existing user */

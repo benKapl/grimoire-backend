@@ -92,18 +92,35 @@ router.post('/signup', (req, res) => {
 
 /** Connect already existing user */
 router.post('/signin', (req, res) => {
-  if (!checkBody(req.body, ['username', 'password'])) {
+  const { googleToken } = req.body;
+
+  if (googleToken) {
+    // Décodage du token Google pour extraire les informations utilisateur
+    const decoded = jwt.decode(googleToken);
+    const { email } = decoded;
+
+    User.findOne({ email }).then((data) => {
+      if (data) {
+        res.json({ result: true, username: data.username, token: data.token });
+      } else {
+        res.json({
+          result: false,
+          error: `Pas d'utilisateur google enregistré`,
+        });
+      }
+    });
+  } else if (!checkBody(req.body, ['username', 'password'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
+  } else {
+    User.findOne({ username: req.body.username }).then((data) => {
+      if (data && bcrypt.compareSync(req.body.password, data.password)) {
+        res.json({ result: true, username: data.username, token: data.token });
+      } else {
+        res.json({ result: false, error: 'User not found or wrong password' });
+      }
+    });
   }
-
-  User.findOne({ username: req.body.username }).then((data) => {
-    if (data && bcrypt.compareSync(req.body.password, data.password)) {
-      res.json({ result: true, token: data.token });
-    } else {
-      res.json({ result: false, error: 'User not found or wrong password' });
-    }
-  });
 });
 
 /** Change user username in DB */

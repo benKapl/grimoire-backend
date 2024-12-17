@@ -70,6 +70,30 @@ router.get('/languages', async (req, res) => {
   }
 })
 
+/* Get one language by Id or Display Value */
+router.get('/languages/type/:type/value/:value', async (req, res) => {
+  try {
+    const { type, value } = req.params
+    let devLang = null
+    
+    if (type === "id") {
+      devLang = await DevLang.findById(value)
+    } else if (type === "display") {
+      devLang = await DevLang.findOne({ displayValue: value })
+    }
+
+    if (!devLang) throw new Error('Could not retrieve dev language');
+    
+    return res.json({ result: true, language: devLang });
+
+  } catch(error) {
+    return res.json({ result: false, error: error.message });
+  }
+})
+
+
+
+
 /* Create a new editor_theme in database */
 router.post("/editor_themes", async (req, res) => {
   const isBodyValid = checkBody(req.body, ['displayValue', 'editorValue']); // isExecutable not included because if false would not pass checkBody

@@ -66,7 +66,7 @@ router.get('/languages', async (req, res) => {
     return res.json({ result: true, dev_languages: devLangs });
 
   } catch(error) {
-    return res.json({ result: false, error: error.message });
+    return res.json({ result: false, error: error.message }); 
   }
 })
 

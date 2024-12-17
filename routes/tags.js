@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
 router.get('/:noteId', async (req,res) => {
   try {
     const { noteId } = req.params;
-
+    // aggrégation afin de trouver toutes les tag lié à une note
     const foundTags = await Tag.aggregate([
       {
         $match: {
@@ -91,6 +91,36 @@ router.get('/:noteId', async (req,res) => {
 })
 
 router.delete('/', async (req, res) => {
+  try {
+    const { tagId, token, noteId } = req.body;
+    console.log("tagId", tagId)
+    const tag = await Tag.findById(tagId)
+    const user = await User.findOne({token})
+    console.log(user)
+    if (!user) {
+      res.json({ result: false, error: 'User not found '});
+      return
+    }
+    if (!tag) {
+      res.json({ result: false, error: 'tag not found '});
+      return
+    } 
+    if (tag.notes.length === 1) {
+      await Tag.findByIdAndDelete(tagId)
+      return res.json({ result: true })
+    } else {
+      await Tag.findByIdAndUpdate(
+        tagId,
+        {$pull: {notes: noteId}}
+      )
 
-})
+      return res.json({ result: true })
+    }
+
+
+  } catch(error) {
+    return res.json({ result: false, error: error.message });
+  }
+
+}) 
 module.exports = router;

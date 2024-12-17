@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const DevLang = require('../models/dev_languages');
 const EditorTheme = require('../models/editor_themes');
@@ -12,23 +12,50 @@ const { checkBody } = require('../modules/checkBody');
 
 /** Create user in DB */
 router.post('/signup', (req, res) => {
-  const { googleToken, email, username, password } = req.body;
+  // Creation user avec google recuperation des infos envoyées par le front
+  const { googleToken } = req.body;
   if (googleToken) {
     if (!checkBody(req.body, ['googleToken'])) {
       return res.json({ result: false, error: 'Missing Google token' });
     }
+    // Décodage du token Google pour extraire les informations utilisateur
     const decoded = jwt.decode(googleToken);
+
     if (!decoded) {
       return res.json({ result: false, error: 'Invalid Google token' });
     }
-    const { email, name } = decoded;
+
+    console.log(decoded);
+    const { email, name, picture } = decoded;
 
     User.findOne({ email }).then((data) => {
       if (data === null) {
+        console.log(typeof picture);
+
+        const newUser = new User({
+          username: name,
+          email: email,
+          profilePic: picture,
+          token: uid2(32),
+          defaultDevLang: null,
+          defaultEditorTheme: null,
+          isDark: false,
+        });
+
+        newUser.save().then((data) => {
+          console.log(data);
+          res.json({
+            result: true,
+            username: data.username,
+            token: data.token,
+          });
+        });
+      } else {
+        res.json({ result: false, error: `L'utilisateur existe déjà` });
       }
     });
   } else {
-    if (!checkBody(req.body, ['username', 'password'])) {
+    if (!checkBody(req.body, ['email', 'username', 'password'])) {
       res.json({ result: false, error: 'Missing or empty fields' });
       return;
     }

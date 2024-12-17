@@ -159,17 +159,17 @@ router.get('/search/:query/:token', async (req, res, next) => {
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  console.log("back 1");
-  checkBody(req.body, ['token','date']);
-  
+  console.log('back 1');
+  checkBody(req.body, ['token', 'date']);
+
   try {
     const date = new Date(req.body.date);
-    
+
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
 
     const notes = await Note.find({
-      createdAt: { $gte: startOfDay, $lt: endOfDay }
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
     if (notes.length === 0) {
@@ -305,7 +305,26 @@ router.get('/linked/forward/:noteId', async (req, res) => {
       })),
     });
   } catch (err) {
-    res.json({ restult: false, error: err.message });
+    res.json({ result: false, error: err.message });
+  }
+});
+
+router.get('/linked/backward/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    const notes = await Note.findById(noteId).populate('backwardNotes');
+    if (!notes) throw new Error('Could note find note');
+
+    res.json({
+      result: true,
+      backwardNotes: notes.backwardNotes.map((note) => ({
+        id: note._id,
+        title: note.title,
+      })),
+    });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
   }
 });
 

@@ -6,7 +6,6 @@ const { checkBody } = require('../modules/checkBody');
 const Bloc = require('../models/blocs');
 const Note = require('../models/notes');
 
-
 /** Create a new bloc in a note */
 router.post('/', async (req, res) => {
   const isBodyValid = checkBody(req.body, ['position', 'type', 'noteId']); // check only type and position (language can be null)

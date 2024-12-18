@@ -229,28 +229,4 @@ router.put('/update/profilePicture', async (req, res) => {
   }
 });
 
-/** Change BLABLABLA */
-// router.put('/update/devlang', async (req, res) => {
-//   try {
-//     const { token, profilPic, defaultEditorTheme } = req.body
-
-//     const devLang = await DevLang.findOne({ displayValue: defaultDevLang })
-//     if (!devLang) throw new Error('Could not retrieve dev language');
-
-//     const userToUpdate = await User.findOne({ token })
-//     if (!userToUpdate) throw new Error("Could not find user")
-
-//     const update = await User.updateOne(
-//       { token },
-//       { defaultDevLang: devLang._id },
-//     )
-
-//     if (update.modifiedCount !== 1) throw new Error("Could not update user devLang")
-//     res.json({ result: true })
-
-//   } catch(err) {
-//     res.json({ result: false, error: err.message })
-//   }
-// })
-
 module.exports = router;

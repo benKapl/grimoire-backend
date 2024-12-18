@@ -101,7 +101,14 @@ router.post('/signin', (req, res) => {
 
     User.findOne({ email }).then((data) => {
       if (data) {
-        res.json({ result: true, username: data.username, token: data.token });
+        console.log(data);
+
+        res.json({
+          result: true,
+          username: data.username,
+          token: data.token,
+          profilePic: data.profilePic,
+        });
       } else {
         res.json({
           result: false,
@@ -115,7 +122,14 @@ router.post('/signin', (req, res) => {
   } else {
     User.findOne({ username: req.body.username }).then((data) => {
       if (data && bcrypt.compareSync(req.body.password, data.password)) {
-        res.json({ result: true, username: data.username, token: data.token });
+        console.log(data);
+
+        res.json({
+          result: true,
+          username: data.username,
+          token: data.token,
+          profilePic: data.profilePic,
+        });
       } else {
         res.json({ result: false, error: 'User not found or wrong password' });
       }
@@ -185,6 +199,30 @@ router.put('/update/editorTheme', async (req, res) => {
 
     if (update.modifiedCount !== 1)
       throw new Error('Could not update user editorTheme');
+    res.json({ result: true });
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+});
+
+/** Change profile pic */
+router.put('/update/profilePicture', async (req, res) => {
+  try {
+    const { token, newProfilePic } = req.body;
+    console.log('Received token:', token);
+    console.log('Received newProfilPic:', newProfilePic);
+
+    const userToUpdate = await User.findOne({ token });
+    if (!userToUpdate) throw new Error('Could not find user');
+
+    const update = await User.updateOne(
+      { token },
+      { profilePic: newProfilePic }
+    );
+
+    if (update.modifiedCount !== 1)
+      throw new Error('Could not update user profile picture');
+
     res.json({ result: true });
   } catch (err) {
     res.json({ result: false, error: err.message });

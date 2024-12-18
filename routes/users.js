@@ -35,7 +35,7 @@ router.post('/signup', (req, res) => {
         const newUser = new User({
           username: name,
           email: email,
-          profilePic: picture,
+          profilePic: picture || '/images/HatSorcerer.png',
           token: uid2(32),
           defaultDevLang: null,
           defaultEditorTheme: null,
@@ -48,6 +48,7 @@ router.post('/signup', (req, res) => {
             result: true,
             username: data.username,
             token: data.token,
+            profilePic: data.profilePic,
           });
         });
       } else {
@@ -68,7 +69,7 @@ router.post('/signup', (req, res) => {
           email: req.body.email,
           password: hash,
           token: uid2(32),
-          profilePic: req.body.profilePic | null,
+          profilePic: req.body.profilePic || '/images/HatSorcerer.png',
           defaultDevLang: null,
           defaultEditorTheme: null,
           isDark: false,
@@ -80,6 +81,7 @@ router.post('/signup', (req, res) => {
             result: true,
             username: data.username,
             token: data.token,
+            profilePic: data.profilePic,
           });
         });
       } else {

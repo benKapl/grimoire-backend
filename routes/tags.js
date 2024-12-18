@@ -98,13 +98,35 @@ router.get('/:noteId', async (req,res) => {
   }
 })
 
+/** get all notes ids linked to a tag */
+router.get("/notes/:tagValue/:token", async (req, res) => {
+  try {
+    const { tagValue, token } = req.params;
+
+    const user = await User.findOne({token})
+    if (!user) throw new Error('User not found ')
+    
+    const tag = await Tag.findOne({ value: tagValue, user: user._id }).populate("notes")
+    if (!tag) throw new Error('Tag not found ')
+    res.json({ 
+      result: true, 
+      notes: tag.notes.map(note => ({ _id: note._id, title: note.title } )) 
+    })
+  } catch(error) {
+    return res.json({ result: false, error: error.message });
+  }
+  
+  
+
+})
+
 router.delete('/', async (req, res) => {
   try {
     const {value, token, noteId } = req.body;
     //console.log("tagId", tagId)
     const tag = await Tag.findOne({value})
     const user = await User.findOne({token})
-    console.log(user)
+
     if (!user) {
       // si aucun user, early return
       res.json({ result: false, error: 'User not found '});

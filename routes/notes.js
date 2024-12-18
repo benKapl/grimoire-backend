@@ -149,7 +149,7 @@ router.get('/search/:query/:token', async (req, res, next) => {
       user: user._id,
       title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
-    res.status(200).json(notes);
+    res.status(200).json({ result: true, notes });
   } catch (error) {
     console.error('Error fetching notes:', error);
     res.status(500).json({ message: 'Internal Server Error' });

@@ -38,7 +38,7 @@ router.get('/:noteId', async (req, res) => {
     // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId).populate('blocs');
+    const note = await Note.findById(noteId).populate('blocs').populate("forwardNotes").populate("backwardNotes");
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -323,44 +323,5 @@ router.put("/linked", async (req, res) => {
     res.json({ result: false, error: err.message });
   }
 })
-
-/* Get the related Note */
-router.get('/linked/forward/:noteId', async (req, res) => {
-  try {
-    const { noteId } = req.params;
-
-    const notes = await Note.findById(noteId).populate('forwardNotes');
-    if (!notes) throw new Error('Could note find note');
-
-    res.json({
-      result: true,
-      forwardNotes: notes.forwardNotes.map((note) => ({
-        id: note._id,
-        title: note.title,
-      })),
-    });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
-
-router.get('/linked/backward/:noteId', async (req, res) => {
-  try {
-    const { noteId } = req.params;
-
-    const notes = await Note.findById(noteId).populate('backwardNotes');
-    if (!notes) throw new Error('Could note find note');
-
-    res.json({
-      result: true,
-      backwardNotes: notes.backwardNotes.map((note) => ({
-        id: note._id,
-        title: note.title,
-      })),
-    });
-  } catch (err) {
-    res.json({ result: false, error: err.message });
-  }
-});
 
 module.exports = router;

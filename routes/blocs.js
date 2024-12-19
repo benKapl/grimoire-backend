@@ -176,9 +176,6 @@ router.put("/referenceLink", async (req, res) => {
 
   try {
     const note = await Note.findById(req.body.currentNoteId);
-    console.log('note forward :',note.forwardNotes)
-    console.log('note ref :',req.body.refNoteId)
-    console.log('si cette valeur existe dans note :',note.forwardNotes.includes(req.body.refNoteId))
 
     if (!note.forwardNotes.includes(req.body.refNoteId)){
       // update forward current note
@@ -186,7 +183,7 @@ router.put("/referenceLink", async (req, res) => {
         { _id: req.body.currentNoteId },
         { $push: { forwardNotes: req.body.refNoteId } }
       );
-      console.log('si cette valeur existe dans note 2:',note.backwardNotes.includes(req.body.currentNoteId))
+
       if (!note.backwardNotes.includes(req.body.currentNoteI)){
         // update backward referenced note
         const updatebackwardNote = await Note.updateOne(

@@ -199,8 +199,8 @@ router.post('/by/update', async (req, res) => {
   try {
     const date = new Date(req.body.date);
 
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée date
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée date
 
     const { token } = req.body;
     const user = await User.findOne({ token });

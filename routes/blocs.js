@@ -170,35 +170,4 @@ router.delete('/:blocId/:noteId', async (req, res) => {
   }
 });
 
-router.put("/referenceLink", async (req, res) => {
-  const isBodyValid = checkBody(req.body, ['currentNoteId', 'refNoteId']); // isExecutable not included because if false would not pass checkBody
-  if (!isBodyValid) throw new Error('Missing or empty body parameter');
-
-  try {
-    const note = await Note.findById(req.body.currentNoteId);
-
-    if (!note.forwardNotes.includes(req.body.refNoteId)){
-      // update forward current note
-      const updateforwardNote = await Note.updateOne(
-        { _id: req.body.currentNoteId },
-        { $push: { forwardNotes: req.body.refNoteId } }
-      );
-
-      if (!note.backwardNotes.includes(req.body.currentNoteI)){
-        // update backward referenced note
-        const updatebackwardNote = await Note.updateOne(
-          { _id: req.body.refNoteId },
-          { $push: { backwardNotes: req.body.currentNoteId } }
-        );
-        return res.json({result: true});
-      }
-      return res.json({result: 'this is already a forward note'});
-    }
-    
-  res.json({result: 'this note cannot ref itself'});
-} catch (err) {
-  res.json({ result: false, error: err.message });
-}
-
-})
 module.exports = router;

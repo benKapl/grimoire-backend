@@ -149,7 +149,7 @@ router.get('/search/:query/:token', async (req, res, next) => {
       user: user._id,
       title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
-    res.status(200).json(notes);
+    res.json({result: true, notes});
   } catch (error) {
     console.error('Error fetching notes:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -291,6 +291,38 @@ router.get('/favorites/:token', async (req, res) => {
     res.json({ result: false, error: err.message });
   }
 });
+
+/** Add a note to list of forward or backward notes */
+router.put("/linked", async (req, res) => {
+  const isBodyValid = checkBody(req.body, ['currentNoteId', 'refNoteId']); 
+  if (!isBodyValid) throw new Error('Missing or empty body parameter');
+
+  try {
+    const note = await Note.findById(req.body.currentNoteId);
+
+    if (!note.forwardNotes.includes(req.body.refNoteId)){
+      // update forward current note
+      const updateforwardNote = await Note.updateOne(
+        { _id: req.body.currentNoteId },
+        { $push: { forwardNotes: req.body.refNoteId } }
+      );
+
+      if (!note.backwardNotes.includes(req.body.currentNoteI)){
+        // update backward referenced note
+        const updatebackwardNote = await Note.updateOne(
+          { _id: req.body.refNoteId },
+          { $push: { backwardNotes: req.body.currentNoteId } }
+        );
+        return res.json({result: true});
+      }
+      return res.json({result: false, error: 'this is already a forward note'});
+    }
+    
+    res.json({result: 'this note cannot ref itself'});
+  } catch (err) {
+    res.json({ result: false, error: err.message });
+  }
+})
 
 /* Get the related Note */
 router.get('/linked/forward/:noteId', async (req, res) => {

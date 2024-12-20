@@ -35,10 +35,12 @@ router.get('/user/:token', async (req, res) => {
 router.get('/:noteId', async (req, res) => {
   try {
     const { noteId } = req.params;
-    // console.log(noteId);
     if (!noteId) throw new Error('Invalid ID');
 
-    const note = await Note.findById(noteId).populate('blocs').populate("forwardNotes").populate("backwardNotes");
+    const note = await Note.findById(noteId)
+      .populate('blocs')
+      .populate('forwardNotes')
+      .populate('backwardNotes');
 
     if (!note) throw new Error('Could not get note');
     res.json({ result: true, note: note });
@@ -149,7 +151,7 @@ router.get('/search/:query/:token', async (req, res, next) => {
       user: user._id,
       title: { $regex: `^${query}`, $options: 'i' }, // 'i' rend la recherche insensible à la casse
     });
-    res.json({result: true, notes});
+    res.json({ result: true, notes });
   } catch (error) {
     console.error('Error fetching notes:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -158,24 +160,24 @@ router.get('/search/:query/:token', async (req, res, next) => {
 
 /** Get note by date*/
 router.post('/by/date', async (req, res) => {
-  checkBody(req.body, ['token','date']);
+  checkBody(req.body, ['token', 'date']);
   try {
     const date = new Date(req.body.date);
     const startOfDay = new Date(date.setHours(0, 0, 0, 0)); // Début de la journée
     const endOfDay = new Date(date.setHours(23, 59, 59, 999)); // Fin de la journée
-    
+
     const { token } = req.body;
     const user = await User.findOne({ token });
     if (!user) {
       return res.json({ result: false, error: 'User not found' });
     }
 
-    const notes = await Note.find({ user: user._id,
-      createdAt: { $gte: startOfDay, $lt: endOfDay }
+    const notes = await Note.find({
+      user: user._id,
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
     if (notes.length === 0) {
-      console.log('No notes found with this date.');
       return res.json({ result: true, notes: [] });
     }
 
@@ -208,13 +210,12 @@ router.post('/by/update', async (req, res) => {
       return res.json({ result: false, error: 'User not found' });
     }
 
-    const notes = await Note.find({ user: user._id,
+    const notes = await Note.find({
+      user: user._id,
       updatedAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
-    //console.log("notes :", notes)
     if (notes.length === 0) {
-      console.log('No notes found with this date.');
       return res.json({ result: true, notes: [] });
     }
 
@@ -293,35 +294,38 @@ router.get('/favorites/:token', async (req, res) => {
 });
 
 /** Add a note to list of forward or backward notes */
-router.put("/linked", async (req, res) => {
-  const isBodyValid = checkBody(req.body, ['currentNoteId', 'refNoteId']); 
+router.put('/linked', async (req, res) => {
+  const isBodyValid = checkBody(req.body, ['currentNoteId', 'refNoteId']);
   if (!isBodyValid) throw new Error('Missing or empty body parameter');
 
   try {
     const note = await Note.findById(req.body.currentNoteId);
 
-    if (!note.forwardNotes.includes(req.body.refNoteId)){
+    if (!note.forwardNotes.includes(req.body.refNoteId)) {
       // update forward current note
       const updateforwardNote = await Note.updateOne(
         { _id: req.body.currentNoteId },
         { $push: { forwardNotes: req.body.refNoteId } }
       );
 
-      if (!note.backwardNotes.includes(req.body.currentNoteI)){
+      if (!note.backwardNotes.includes(req.body.currentNoteI)) {
         // update backward referenced note
         const updatebackwardNote = await Note.updateOne(
           { _id: req.body.refNoteId },
           { $push: { backwardNotes: req.body.currentNoteId } }
         );
-        return res.json({result: true});
+        return res.json({ result: true });
       }
-      return res.json({result: false, error: 'this is already a forward note'});
+      return res.json({
+        result: false,
+        error: 'this is already a forward note',
+      });
     }
-    
-    res.json({result: 'this note cannot ref itself'});
+
+    res.json({ result: 'this note cannot ref itself' });
   } catch (err) {
     res.json({ result: false, error: err.message });
   }
-})
+});
 
 module.exports = router;

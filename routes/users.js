@@ -25,13 +25,10 @@ router.post('/signup', (req, res) => {
       return res.json({ result: false, error: 'Invalid Google token' });
     }
 
-    console.log(decoded);
     const { email, name, picture } = decoded;
 
     User.findOne({ email }).then((data) => {
       if (data === null) {
-        console.log(typeof picture);
-
         const newUser = new User({
           username: name,
           email: email,
@@ -43,7 +40,6 @@ router.post('/signup', (req, res) => {
         });
 
         newUser.save().then((data) => {
-          console.log(data);
           res.json({
             result: true,
             username: data.username,
@@ -103,8 +99,6 @@ router.post('/signin', (req, res) => {
 
     User.findOne({ email }).then((data) => {
       if (data) {
-        console.log(data);
-
         res.json({
           result: true,
           username: data.username,
@@ -124,8 +118,6 @@ router.post('/signin', (req, res) => {
   } else {
     User.findOne({ username: req.body.username }).then((data) => {
       if (data && bcrypt.compareSync(req.body.password, data.password)) {
-        console.log(data);
-
         res.json({
           result: true,
           username: data.username,
@@ -148,7 +140,7 @@ router.put('/update/username', async (req, res) => {
     if (!userToUpdate) throw new Error('Could not find user');
 
     await User.updateOne({ token }, { username });
-    // console.log("update =>", update)
+
     // if (update.modifiedCount != 1) throw new Error("Could not update user username")
     res.json({ result: true, username });
   } catch (err) {
@@ -211,8 +203,7 @@ router.put('/update/editorTheme', async (req, res) => {
 router.put('/update/profilePicture', async (req, res) => {
   try {
     const { token, newProfilePic } = req.body;
-    console.log('Received token:', token);
-    console.log('Received newProfilPic:', newProfilePic);
+    git;
 
     const userToUpdate = await User.findOne({ token });
     if (!userToUpdate) throw new Error('Could not find user');

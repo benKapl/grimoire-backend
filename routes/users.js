@@ -203,7 +203,6 @@ router.put('/update/editorTheme', async (req, res) => {
 router.put('/update/profilePicture', async (req, res) => {
   try {
     const { token, newProfilePic } = req.body;
-    git;
 
     const userToUpdate = await User.findOne({ token });
     if (!userToUpdate) throw new Error('Could not find user');

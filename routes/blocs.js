@@ -67,7 +67,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-
 /* Get all blocs placed after a given position for a given note */
 router.get('/:noteId/:index', async (req, res) => {
   try {

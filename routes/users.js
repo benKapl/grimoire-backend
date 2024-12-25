@@ -151,7 +151,7 @@ router.put('/update/username', async (req, res) => {
 /** Change user default language in DB */
 router.put('/update/devlang', async (req, res) => {
   try {
-    const { token, username, profilPic, defaultDevLang, defaultEditorTheme } =
+    const { token, defaultDevLang } =
       req.body;
 
     const devLang = await DevLang.findOne({ displayValue: defaultDevLang });

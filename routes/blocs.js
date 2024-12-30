@@ -155,7 +155,7 @@ router.delete('/:blocId/:noteId', async (req, res) => {
       // if bloc is deleted, we need to remove it from the note document
       const updatedNote = await Note.updateOne(
         { _id: noteId }, // find related note
-        { $pull: { blocs: blocId } } // Remove the blocI from the blocs array of the Note document
+        { $pull: { blocs: blocId } } // Remove the blocId from the blocs array of the Note document
       );
       if (updatedNote.modifiedCount === 0) {
         res.json({ result: false, error: 'Could not remove bloc from note' });

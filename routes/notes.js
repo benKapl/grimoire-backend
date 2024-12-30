@@ -282,7 +282,7 @@ router.get('/favorites/:token', async (req, res) => {
       result: true,
 
       favorites: favorites.map((favorite) => ({
-        id,
+        id: favorite._id,
         title: favorite.title,
         isBookmarked: favorite.isBookmarked,
       })),

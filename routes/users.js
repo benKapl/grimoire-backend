@@ -32,7 +32,7 @@ router.post('/signup', (req, res) => {
         const newUser = new User({
           username: name,
           email: email,
-          profilePic: picture || '/images/HatSorcerer.png',
+          profilePic: picture || '/images/avatars/HatSorcerer.png',
           token: uid2(32),
           defaultDevLang: null,
           defaultEditorTheme: null,
@@ -65,11 +65,10 @@ router.post('/signup', (req, res) => {
           email: req.body.email,
           password: hash,
           token: uid2(32),
-          profilePic: req.body.profilePic || '/images/HatSorcerer.png',
+          profilePic: req.body.profilePic || '/images/avatars/HatSorcerer.png',
           defaultDevLang: null,
           defaultEditorTheme: null,
           isDark: false,
-          //devLang: 'dev_1',
         });
 
         newUser.save().then((data) => {

@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
       res.json({ result: false, error: 'Bloc was not linked to note' });
       return;
     }
-    res.json({ result: true }); // if updated, respond result = true
+    res.json({ result: true, bloc: newBloc }); // if updated, respond result = true
   } catch (err) {
     res.json({ result: false, error: err.message });
   }

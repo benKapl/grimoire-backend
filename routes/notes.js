@@ -49,7 +49,7 @@ router.get('/:noteId', async (req, res) => {
   }
 });
 
-/** Create a new note in database */
+/** Create a new note in database */ 
 router.post('/', async (req, res) => {
   const isBodyValid = checkBody(req.body, ['token']);
   if (!isBodyValid) throw new Error('Missing or empty body parameter');
